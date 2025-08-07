@@ -93,9 +93,10 @@ export function useGroups() {
       .from('groups')
       .select('id')
       .eq('invite_code', inviteCode)
-      .single();
+      .maybeSingle();
 
     if (groupError) throw groupError;
+    if (!group) throw new Error('Group not found');
 
     // Add user as member
     const { error: memberError } = await supabase

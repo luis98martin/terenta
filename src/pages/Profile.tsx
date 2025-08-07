@@ -2,6 +2,8 @@ import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfiles } from "@/hooks/useProfiles";
 import { 
   User, 
   Settings, 
@@ -29,6 +31,8 @@ const menuItems = [
 ];
 
 export default function Profile() {
+  const { user, signOut } = useAuth();
+  const { getDisplayName } = useProfiles();
   return (
     <div className="min-h-screen bg-background pb-20">
       <AppHeader title="Profile" />
@@ -41,10 +45,10 @@ export default function Profile() {
           </div>
           
           <h2 className="text-xl font-semibold text-card-foreground mb-1">
-            Alex Johnson
+            {user ? getDisplayName(user.id) : 'Loading...'}
           </h2>
           <p className="text-text-secondary mb-4">
-            alex.johnson@email.com
+            {user?.email || 'Loading...'}
           </p>
           
           <Button variant="mustard-outline" size="sm">
@@ -113,12 +117,14 @@ export default function Profile() {
         </TeRentaCard>
 
         {/* Sign Out */}
-        <TeRentaCard variant="interactive">
-          <div className="flex items-center gap-3 text-destructive">
-            <LogOut size={20} />
-            <span className="font-medium">Sign Out</span>
-          </div>
-        </TeRentaCard>
+        <div onClick={() => signOut()}>
+          <TeRentaCard variant="interactive">
+            <div className="flex items-center gap-3 text-destructive">
+              <LogOut size={20} />
+              <span className="font-medium">Sign Out</span>
+            </div>
+          </TeRentaCard>
+        </div>
       </div>
 
       <BottomNavigation />
