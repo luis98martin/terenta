@@ -22,7 +22,8 @@ export default function Proposals() {
     title: '',
     description: '',
     group_id: '',
-    expires_at: ''
+    expires_at: '',
+    event_date: ''
   });
 
   const handleCreateProposal = async (e: React.FormEvent) => {
@@ -44,6 +45,7 @@ export default function Proposals() {
         description: formData.description.trim() || undefined,
         group_id: formData.group_id,
         expires_at: formData.expires_at || undefined,
+        event_date: formData.event_date || undefined,
       });
 
       toast({
@@ -55,7 +57,8 @@ export default function Proposals() {
         title: '',
         description: '',
         group_id: '',
-        expires_at: ''
+        expires_at: '',
+        event_date: ''
       });
       setShowCreateForm(false);
     } catch (error: any) {
@@ -167,6 +170,16 @@ export default function Proposals() {
                   type="datetime-local"
                   value={formData.expires_at}
                   onChange={(e) => setFormData(prev => ({ ...prev, expires_at: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="event_date">Event Date (If proposal becomes an event)</Label>
+                <Input
+                  id="event_date"
+                  type="datetime-local"
+                  value={formData.event_date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, event_date: e.target.value }))}
                 />
               </div>
 
@@ -335,9 +348,9 @@ export default function Proposals() {
                     </div>
                   )}
                   
-                  {proposal.user_vote && (
+                  {proposal.user_vote && proposal.status === 'active' && (
                     <div className="text-xs text-center text-text-secondary bg-background/50 py-2 rounded">
-                      You voted: {proposal.user_vote}
+                      You voted: {proposal.user_vote} • Click any button to change your vote
                     </div>
                   )}
                 </div>

@@ -9,6 +9,7 @@ export interface Proposal {
   group_id: string;
   created_by: string;
   expires_at?: string;
+  event_date?: string;
   status: 'active' | 'closed' | 'passed' | 'failed';
   created_at: string;
   updated_at: string;
@@ -79,6 +80,7 @@ export function useProposals(groupId?: string) {
     description?: string;
     group_id: string;
     expires_at?: string;
+    event_date?: string;
   }) => {
     if (!user) throw new Error('User not authenticated');
 

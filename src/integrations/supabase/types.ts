@@ -275,6 +275,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          event_date: string | null
           expires_at: string | null
           group_id: string
           id: string
@@ -286,6 +287,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          event_date?: string | null
           expires_at?: string | null
           group_id: string
           id?: string
@@ -297,6 +299,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          event_date?: string | null
           expires_at?: string | null
           group_id?: string
           id?: string

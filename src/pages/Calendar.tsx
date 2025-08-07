@@ -97,133 +97,18 @@ export default function Calendar() {
       <AppHeader title="Calendar" />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
-        {/* Create Event Button */}
-        {groups.length > 0 ? (
-          <Button 
-            variant="mustard" 
-            className="w-full h-14"
-            onClick={() => setShowCreateForm(!showCreateForm)}
-          >
-            <Plus size={20} className="mr-2" />
-            Create Event
-          </Button>
-        ) : (
-          <TeRentaCard variant="highlighted">
-            <div className="text-center">
-              <p className="text-sm text-text-secondary mb-2">
-                You need to join a group to create events
-              </p>
-              <Button variant="mustard" size="sm" asChild>
-                <Link to="/groups">Join a Group</Link>
-              </Button>
-            </div>
-          </TeRentaCard>
-        )}
+        {/* Info about event creation */}
+        <TeRentaCard variant="highlighted">
+          <div className="text-center">
+            <p className="text-sm text-text-secondary mb-2">
+              Events are automatically created from accepted proposals
+            </p>
+            <Button variant="mustard" size="sm" asChild>
+              <Link to="/proposals">Create Proposal</Link>
+            </Button>
+          </div>
+        </TeRentaCard>
 
-        {/* Create Event Form */}
-        {showCreateForm && (
-          <TeRentaCard className="animate-slide-up">
-            <form onSubmit={handleCreateEvent} className="space-y-4">
-              <h3 className="font-semibold text-card-foreground mb-4">Create New Event</h3>
-              
-              <div className="space-y-2">
-                <Label htmlFor="title">Event Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="e.g., Movie Night"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="What's this event about?"
-                  className="min-h-20"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="start_date">Start Date *</Label>
-                  <Input
-                    id="start_date"
-                    type="datetime-local"
-                    value={formData.start_date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end_date">End Date</Label>
-                  <Input
-                    id="end_date"
-                    type="datetime-local"
-                    value={formData.end_date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                  placeholder="Where will this happen?"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="group_id">Group *</Label>
-                <select
-                  id="group_id"
-                  value={formData.group_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, group_id: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border rounded-md"
-                  required
-                >
-                  <option value="">Select a group...</option>
-                  {groups.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name}
-                    </option>
-                  ))}
-                </select>
-                {groups.length === 0 && (
-                  <p className="text-sm text-text-secondary">
-                    You need to join a group first to create events
-                  </p>
-                )}
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowCreateForm(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="mustard"
-                  disabled={creating}
-                  className="flex-1"
-                >
-                  {creating ? 'Creating...' : 'Create Event'}
-                </Button>
-              </div>
-            </form>
-          </TeRentaCard>
-        )}
 
         {/* Events List */}
         <div className="space-y-4">
@@ -320,14 +205,16 @@ export default function Calendar() {
               <CalendarIcon className="w-16 h-16 mx-auto text-text-secondary mb-4" />
               <h3 className="text-xl font-semibold text-foreground mb-2">No events scheduled</h3>
               <p className="text-text-secondary mb-6 max-w-sm mx-auto">
-                Create your first event or join a group to see upcoming activities!
+                Events are created automatically from accepted proposals with event dates!
               </p>
               <Button 
                 variant="mustard" 
-                onClick={() => setShowCreateForm(true)}
+                asChild
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Event
+                <Link to="/proposals">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Proposal
+                </Link>
               </Button>
             </div>
           )}
