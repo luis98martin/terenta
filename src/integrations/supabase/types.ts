@@ -322,6 +322,7 @@ export type Database = {
           group_id: string
           id: string
           image_url: string | null
+          location: string | null
           status: string
           title: string
           updated_at: string
@@ -335,6 +336,7 @@ export type Database = {
           group_id: string
           id?: string
           image_url?: string | null
+          location?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -348,6 +350,7 @@ export type Database = {
           group_id?: string
           id?: string
           image_url?: string | null
+          location?: string | null
           status?: string
           title?: string
           updated_at?: string

@@ -250,41 +250,88 @@ export default function ProposalDetail() {
                 <span>Proposed for: {new Date(proposal.event_date).toLocaleString()}</span>
               </div>
             )}
+
+            {proposal.location && (
+              <div className="text-sm">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(proposal.location)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-accent hover:opacity-80"
+                >
+                  View location in Google Maps
+                </a>
+              </div>
+            )}
           </div>
         </TeRentaCard>
 
-        {/* Voting Results */}
+        {/* Voting Results - Compact */}
         <TeRentaCard>
-          <h2 className="font-semibold text-card-foreground mb-4">Voting Results</h2>
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2 text-green-600">
-                <ThumbsUp size={16} />
-                <span>Yes</span>
-              </div>
-              <span className="font-semibold">{proposal.yes_votes || 0}</span>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-text-secondary">Voting</h2>
+              <span className="text-xs text-text-secondary">Total: {proposal.total_votes || 0}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2 text-red-600">
-                <ThumbsDown size={16} />
-                <span>No</span>
-              </div>
-              <span className="font-semibold">{proposal.no_votes || 0}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Minus size={16} />
-                <span>Abstain</span>
-              </div>
-              <span className="font-semibold">{proposal.abstain_votes || 0}</span>
-            </div>
-          </div>
 
-          {/* Individual Votes */}
-          <div className="mt-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-700 dark:text-green-300 text-xs">
+                <ThumbsUp size={12} />
+                <span>{proposal.yes_votes || 0}</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/10 text-red-700 dark:text-red-300 text-xs">
+                <ThumbsDown size={12} />
+                <span>{proposal.no_votes || 0}</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-text-secondary text-xs">
+                <Minus size={12} />
+                <span>{proposal.abstain_votes || 0}</span>
+              </div>
+            </div>
+
+            {proposal.status === 'active' && (
+              <div className="flex gap-2">
+                <Button
+                  variant={proposal.user_vote === 'yes' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleVote('yes')}
+                  className="flex-1"
+                >
+                  <ThumbsUp size={14} className="mr-1" /> Yes
+                </Button>
+                <Button
+                  variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
+                  size="sm"
+                  onClick={() => handleVote('no')}
+                  className="flex-1"
+                >
+                  <ThumbsDown size={14} className="mr-1" /> No
+                </Button>
+                <Button
+                  variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
+                  size="sm"
+                  onClick={() => handleVote('abstain')}
+                  className="flex-1"
+                >
+                  <Minus size={14} className="mr-1" /> Abstain
+                </Button>
+              </div>
+            )}
+
+            {proposal.user_vote && proposal.status === 'active' && (
+              <div className="text-xs text-center text-text-secondary bg-background/50 py-2 rounded">
+                You voted: {proposal.user_vote} • Tap to change
+              </div>
+            )}
+          </div>
+        </TeRentaCard>
+
+        {/* Individual Votes */}
+        <TeRentaCard>
+          <div className="space-y-4">
             <h3 className="font-medium text-card-foreground">Individual Votes</h3>
             <div className="space-y-2">
-              {['yes', 'no', 'abstain'].map((voteType) => {
+              {(['yes', 'no', 'abstain'] as const).map((voteType) => {
                 const votesByType = votes.filter(v => v.vote_type === voteType);
                 if (votesByType.length === 0) return null;
                 
@@ -318,47 +365,6 @@ export default function ProposalDetail() {
               )}
             </div>
           </div>
-
-          {/* Voting Buttons */}
-          {proposal.status === 'active' && (
-            <div className="mt-4 space-y-3">
-              <div className="flex gap-2">
-                <Button
-                  variant={proposal.user_vote === 'yes' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleVote('yes')}
-                  className="flex-1"
-                >
-                  <ThumbsUp size={14} className="mr-1" />
-                  Yes
-                </Button>
-                <Button
-                  variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
-                  size="sm"
-                  onClick={() => handleVote('no')}
-                  className="flex-1"
-                >
-                  <ThumbsDown size={14} className="mr-1" />
-                  No
-                </Button>
-                <Button
-                  variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => handleVote('abstain')}
-                  className="flex-1"
-                >
-                  <Minus size={14} className="mr-1" />
-                  Abstain
-                </Button>
-              </div>
-
-              {proposal.user_vote && (
-                <div className="text-xs text-center text-text-secondary bg-background/50 py-2 rounded">
-                  You voted: {proposal.user_vote} • Click any button to change your vote
-                </div>
-              )}
-            </div>
-          )}
         </TeRentaCard>
 
         {/* Comments Section */}

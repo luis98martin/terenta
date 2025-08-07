@@ -9,20 +9,25 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useProposals } from "@/hooks/useProposals";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CreateProposal() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const { createProposal } = useProposals();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [creating, setCreating] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     expires_at: '',
-    event_date: ''
+    event_date: '',
+    location: ''
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleCreateProposal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,12 +43,27 @@ export default function CreateProposal() {
 
     setCreating(true);
     try {
+      let imageUrl: string | undefined;
+
+      if (imageFile && user) {
+        const path = `${user.id}/${Date.now()}-${imageFile.name}`;
+        const { error: uploadError } = await supabase
+          .storage
+          .from('proposal-images')
+          .upload(path, imageFile, { upsert: false });
+        if (uploadError) throw uploadError;
+        const { data: pub } = supabase.storage.from('proposal-images').getPublicUrl(path);
+        imageUrl = pub.publicUrl;
+      }
+
       await createProposal({
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
         group_id: groupId,
         expires_at: formData.expires_at || undefined,
         event_date: formData.event_date || undefined,
+        image_url: imageUrl,
+        location: formData.location.trim() || undefined,
       });
 
       toast({
@@ -111,6 +131,26 @@ export default function CreateProposal() {
                 type="datetime-local"
                 value={formData.event_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, event_date: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Location (Optional)</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                placeholder="e.g., Central Park, New York"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Image (Optional)</Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
               />
             </div>
 
