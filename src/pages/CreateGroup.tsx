@@ -6,26 +6,57 @@ import { Textarea } from "@/components/ui/textarea";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { ArrowLeft, Users, Hash, Upload, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useGroups } from "@/hooks/useGroups";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CreateGroup() {
   const navigate = useNavigate();
+  const { createGroup } = useGroups();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    inviteCode: '',
-    isPrivate: false
+    photo: null as File | null
   });
 
-  const generateInviteCode = () => {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setFormData(prev => ({ ...prev, inviteCode: code }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement group creation with Supabase
-    console.log("Creating group:", formData);
-    navigate('/groups');
+    
+    if (!formData.name.trim()) {
+      toast({
+        title: "Group name required",
+        description: "Please enter a name for your group",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const group = await createGroup({
+        name: formData.name.trim(),
+        description: formData.description.trim() || undefined,
+        // TODO: Implement image upload
+        image_url: undefined
+      });
+
+      toast({
+        title: "Group created!",
+        description: `Your group "${group.name}" has been created successfully`,
+      });
+
+      navigate('/groups');
+    } catch (error: any) {
+      toast({
+        title: "Failed to create group",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -99,47 +130,16 @@ export default function CreateGroup() {
               />
             </div>
 
-            {/* Invite Code */}
-            <div className="space-y-2">
-              <Label htmlFor="inviteCode" className="text-card-foreground font-medium">
-                Invite Code
-              </Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
-                  <Input
-                    id="inviteCode"
-                    type="text"
-                    placeholder="Auto-generated"
-                    value={formData.inviteCode}
-                    onChange={(e) => handleInputChange('inviteCode', e.target.value)}
-                    className="pl-10 h-12 rounded-xl border-2 focus:border-accent font-mono"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="mustard-outline"
-                  size="icon"
-                  onClick={generateInviteCode}
-                  className="h-12 w-12"
-                >
-                  <Sparkles size={18} />
-                </Button>
-              </div>
-              <p className="text-sm text-text-secondary">
-                Friends can join using this code
-              </p>
-            </div>
 
             {/* Submit */}
             <Button
               type="submit"
-              variant="hero"
+              variant="mustard"
               size="lg"
               className="w-full mt-8"
-              disabled={!formData.name.trim()}
+              disabled={loading || !formData.name.trim()}
             >
-              Create Group
+              {loading ? 'Creating...' : 'Create Group'}
             </Button>
           </form>
         </TeRentaCard>
@@ -151,7 +151,7 @@ export default function CreateGroup() {
           </h3>
           <ul className="text-sm text-text-secondary space-y-1">
             <li>• Choose a memorable name for your group</li>
-            <li>• Share the invite code with friends to let them join</li>
+            <li>• An invite code will be automatically generated</li>
             <li>• You can change settings later in group preferences</li>
           </ul>
         </TeRentaCard>

@@ -5,11 +5,16 @@ import { Label } from "@/components/ui/label";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { ArrowLeft, Mail, Lock, User } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Auth() {
   const { mode } = useParams<{ mode: 'login' | 'register' }>();
   const navigate = useNavigate();
+  const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
   const isLogin = mode === 'login';
+  const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -18,11 +23,56 @@ export default function Auth() {
     confirmPassword: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement authentication with Supabase
-    // For now, redirect to main app
-    navigate('/');
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) {
+          toast({
+            title: "Error signing in",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          navigate('/');
+        }
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          toast({
+            title: "Passwords don't match",
+            description: "Please make sure your passwords match",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        const { error } = await signUp(formData.email, formData.password, formData.name);
+        if (error) {
+          toast({
+            title: "Error creating account",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Account created!",
+            description: "Please check your email to verify your account",
+          });
+          navigate('/auth/login');
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Something went wrong",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -134,8 +184,9 @@ export default function Auth() {
               variant="mustard"
               size="lg"
               className="w-full mt-6"
+              disabled={loading}
             >
-              {isLogin ? 'Sign In' : 'Create Account'}
+              {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Create Account')}
             </Button>
           </form>
 

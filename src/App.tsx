@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthGuard } from "@/components/AuthGuard";
 import Welcome from "./pages/Welcome";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -26,13 +27,13 @@ const App = () => (
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/auth/:mode" element={<Auth />} />
           
-          {/* Main App Routes */}
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/groups" element={<Groups />} />
-          <Route path="/groups/create" element={<CreateGroup />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/profile" element={<Profile />} />
+          {/* Main App Routes - Protected */}
+          <Route path="/" element={<AuthGuard><Dashboard /></AuthGuard>} />
+          <Route path="/groups" element={<AuthGuard><Groups /></AuthGuard>} />
+          <Route path="/groups/create" element={<AuthGuard><CreateGroup /></AuthGuard>} />
+          <Route path="/chat" element={<AuthGuard><Chat /></AuthGuard>} />
+          <Route path="/calendar" element={<AuthGuard><Calendar /></AuthGuard>} />
+          <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />

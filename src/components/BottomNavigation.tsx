@@ -52,13 +52,13 @@ export function BottomNavigation() {
               <Icon 
                 size={22} 
                 className={cn(
-                  "transition-all duration-200 mb-1",
+                  "transition-all duration-200 mb-1 text-white",
                   isActive ? "fill-current stroke-2" : "stroke-current stroke-2"
                 )}
               />
               <span className={cn(
                 "text-xs font-medium transition-colors",
-                isActive ? "text-accent" : "text-white/80"
+                isActive ? "text-accent" : "text-white"
               )}>
                 {label}
               </span>

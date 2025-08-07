@@ -3,53 +3,45 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Users, Hash, Search } from "lucide-react";
-import { useState } from "react";
+import { Plus, Users, Calendar, MessageCircle, Search } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const groups = [
-  { 
-    id: 1, 
-    name: "Weekend Squad", 
-    members: 6, 
-    code: "WSQ123",
-    lastActivity: "2h ago", 
-    unread: 3,
-    color: "bg-accent/10",
-    textColor: "text-accent"
-  },
-  { 
-    id: 2, 
-    name: "Work Friends", 
-    members: 4, 
-    code: "WRK456",
-    lastActivity: "1d ago", 
-    unread: 0,
-    color: "bg-primary/10",
-    textColor: "text-primary"
-  },
-  { 
-    id: 3, 
-    name: "Family Fun", 
-    members: 8, 
-    code: "FAM789",
-    lastActivity: "3d ago", 
-    unread: 1,
-    color: "bg-destructive/10",
-    textColor: "text-destructive"
-  },
-];
+import { useGroups } from "@/hooks/useGroups";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Groups() {
-  const [joinCode, setJoinCode] = useState("");
-  const [showJoinForm, setShowJoinForm] = useState(false);
+  const { groups, loading, joinGroup } = useGroups();
+  const { toast } = useToast();
+  const [inviteCode, setInviteCode] = useState("");
+  const [joiningGroup, setJoiningGroup] = useState(false);
 
-  const handleJoinGroup = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement join group functionality
-    console.log("Joining group with code:", joinCode);
-    setJoinCode("");
-    setShowJoinForm(false);
+  const handleJoinGroup = async () => {
+    if (!inviteCode.trim()) {
+      toast({
+        title: "Enter invite code",
+        description: "Please enter a valid invite code",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setJoiningGroup(true);
+    try {
+      await joinGroup(inviteCode.trim().toUpperCase());
+      toast({
+        title: "Joined group!",
+        description: "You've successfully joined the group",
+      });
+      setInviteCode("");
+    } catch (error: any) {
+      toast({
+        title: "Failed to join group",
+        description: error.message || "Invalid invite code",
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningGroup(false);
+    }
   };
 
   return (
@@ -59,15 +51,6 @@ export default function Groups() {
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
-          <Button 
-            variant="mustard" 
-            className="h-14 flex-col"
-            onClick={() => setShowJoinForm(!showJoinForm)}
-          >
-            <Hash size={20} className="mb-1" />
-            Join Group
-          </Button>
-          
           <Button 
             variant="mustard-outline" 
             className="h-14 flex-col"
@@ -80,86 +63,102 @@ export default function Groups() {
           </Button>
         </div>
 
-        {/* Join Group Form */}
-        {showJoinForm && (
-          <TeRentaCard className="animate-slide-up">
-            <form onSubmit={handleJoinGroup} className="space-y-4">
-              <div>
-                <h3 className="font-semibold text-card-foreground mb-2">
-                  Join with Code
-                </h3>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Enter group code"
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value)}
-                    className="flex-1 h-12 rounded-xl"
-                  />
-                  <Button type="submit" variant="mustard" size="icon">
-                    <Plus size={20} />
-                  </Button>
-                </div>
+        {/* Join Group Section */}
+        <TeRentaCard className="animate-fade-in">
+          <div className="space-y-4">
+            <h3 className="font-semibold text-card-foreground">Join a Group</h3>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
+                <Input
+                  placeholder="Enter invite code..."
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                  className="pl-10"
+                  maxLength={8}
+                />
               </div>
-            </form>
-          </TeRentaCard>
-        )}
+              <Button 
+                onClick={handleJoinGroup}
+                disabled={joiningGroup || !inviteCode.trim()}
+                variant="mustard"
+              >
+                {joiningGroup ? 'Joining...' : 'Join'}
+              </Button>
+            </div>
+          </div>
+        </TeRentaCard>
 
-        {/* My Groups */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-foreground">My Groups</h3>
-          
-          {groups.map((group, index) => (
-            <TeRentaCard 
-              key={group.id} 
-              variant="interactive"
-              className="animate-slide-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 ${group.color} rounded-full flex items-center justify-center`}>
-                    <Users className={group.textColor} size={20} />
+        {/* Groups List */}
+        <div className="space-y-4">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-2 text-text-secondary">Loading groups...</p>
+            </div>
+          ) : groups.length > 0 ? (
+            groups.map((group, index) => (
+              <TeRentaCard 
+                key={group.id} 
+                variant="interactive" 
+                className={`animate-slide-up cursor-pointer`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
+                    <Users className="text-accent" size={20} />
                   </div>
-                  <div>
-                    <h4 className="font-medium text-card-foreground">
-                      {group.name}
-                    </h4>
-                    <p className="text-sm text-text-secondary">
-                      {group.members} members • {group.lastActivity}
-                    </p>
-                    <p className="text-xs text-text-secondary font-mono">
-                      Code: {group.code}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  {group.unread > 0 && (
-                    <div className="bg-accent text-accent-foreground text-xs rounded-full w-6 h-6 flex items-center justify-center font-medium">
-                      {group.unread}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-card-foreground truncate">
+                        {group.name}
+                      </h3>
+                      <span className="text-xs text-text-secondary bg-background/50 px-2 py-1 rounded">
+                        {group.user_role}
+                      </span>
                     </div>
-                  )}
+                    {group.description && (
+                      <p className="text-sm text-text-secondary mb-3 line-clamp-2">
+                        {group.description}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-xs text-text-secondary">
+                        <span className="flex items-center gap-1">
+                          <Users size={14} />
+                          {group.member_count} members
+                        </span>
+                        <span>Code: {group.invite_code}</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="glass" size="icon-sm" className="text-accent">
+                          <MessageCircle size={16} />
+                        </Button>
+                        <Button variant="glass" size="icon-sm" className="text-accent">
+                          <Calendar size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </TeRentaCard>
-          ))}
+              </TeRentaCard>
+            ))
+          ) : (
+            <div className="text-center py-12">
+              <Users className="w-16 h-16 mx-auto text-text-secondary mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">No groups yet</h3>
+              <p className="text-text-secondary mb-6 max-w-sm mx-auto">
+                Create your first group or join one with an invite code to get started!
+              </p>
+              <Button variant="mustard" asChild>
+                <Link to="/groups/create">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Group
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
-
-        {/* Empty State or Load More */}
-        {groups.length === 0 && (
-          <TeRentaCard className="text-center py-8">
-            <Users className="w-12 h-12 mx-auto mb-4 text-text-secondary" />
-            <h3 className="font-medium text-card-foreground mb-2">
-              No groups yet
-            </h3>
-            <p className="text-sm text-text-secondary mb-4">
-              Create your first group or join one with a code
-            </p>
-            <Button variant="mustard" size="sm">
-              Get Started
-            </Button>
-          </TeRentaCard>
-        )}
       </div>
 
       <BottomNavigation />
