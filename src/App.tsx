@@ -12,6 +12,7 @@ import CreateGroup from "./pages/CreateGroup";
 import Chat from "./pages/Chat";
 import Calendar from "./pages/Calendar";
 import Profile from "./pages/Profile";
+import Proposals from "./pages/Proposals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/groups/create" element={<AuthGuard><CreateGroup /></AuthGuard>} />
           <Route path="/chat" element={<AuthGuard><Chat /></AuthGuard>} />
           <Route path="/calendar" element={<AuthGuard><Calendar /></AuthGuard>} />
+          <Route path="/proposals" element={<AuthGuard><Proposals /></AuthGuard>} />
           <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
           
           {/* Catch-all route */}

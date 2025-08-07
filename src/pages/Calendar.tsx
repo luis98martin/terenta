@@ -1,209 +1,319 @@
+import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Clock, MapPin, Users } from "lucide-react";
-
-const today = new Date();
-const upcomingEvents = [
-  {
-    id: 1,
-    title: "Movie Night",
-    time: "8:00 PM",
-    date: "Today",
-    location: "Cinema Downtown",
-    group: "Weekend Squad",
-    attendees: 4,
-    status: "confirmed"
-  },
-  {
-    id: 2,
-    title: "Dinner at Mario's",
-    time: "7:00 PM",
-    date: "Tomorrow",
-    location: "Mario's Restaurant",
-    group: "Work Friends",
-    attendees: 3,
-    status: "confirmed"
-  },
-  {
-    id: 3,
-    title: "Beach Day",
-    time: "10:00 AM",
-    date: "Saturday",
-    location: "Santa Monica Beach",
-    group: "Family Fun",
-    attendees: 6,
-    status: "pending"
-  },
-];
-
-const proposalsNeedingVote = [
-  {
-    id: 1,
-    title: "Weekend Getaway",
-    group: "Weekend Squad",
-    options: 3,
-    votes: 2,
-    deadline: "2 days left"
-  },
-  {
-    id: 2,
-    title: "Birthday Party Location",
-    group: "Family Fun",
-    options: 4,
-    votes: 5,
-    deadline: "5 days left"
-  },
-];
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar as CalendarIcon, Plus, MapPin, Users, Clock, CheckCircle, XCircle } from "lucide-react";
+import { useEvents } from "@/hooks/useEvents";
+import { useGroups } from "@/hooks/useGroups";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Calendar() {
+  const { events, loading, createEvent, updateAttendance } = useEvents();
+  const { groups } = useGroups();
+  const { toast } = useToast();
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [creating, setCreating] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    start_date: '',
+    end_date: '',
+    location: '',
+    group_id: ''
+  });
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim() || !formData.start_date) {
+      toast({
+        title: "Missing required fields",
+        description: "Please enter a title and start date",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await createEvent({
+        title: formData.title.trim(),
+        description: formData.description.trim() || undefined,
+        start_date: formData.start_date,
+        end_date: formData.end_date || undefined,
+        location: formData.location.trim() || undefined,
+        group_id: formData.group_id || undefined,
+      });
+
+      toast({
+        title: "Event created!",
+        description: `"${formData.title}" has been scheduled`,
+      });
+
+      setFormData({
+        title: '',
+        description: '',
+        start_date: '',
+        end_date: '',
+        location: '',
+        group_id: ''
+      });
+      setShowCreateForm(false);
+    } catch (error: any) {
+      toast({
+        title: "Failed to create event",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleAttendanceUpdate = async (eventId: string, status: 'attending' | 'not_attending') => {
+    try {
+      await updateAttendance(eventId, status);
+      toast({
+        title: "Attendance updated",
+        description: `You are ${status === 'attending' ? 'attending' : 'not attending'} this event`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to update attendance",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <AppHeader title="Calendar" />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
-        {/* Quick Calendar View */}
-        <TeRentaCard>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-card-foreground">
-              {today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </h3>
-            <Button variant="ghost" size="sm" className="text-accent">
-              View Full Calendar
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-7 gap-1 text-center text-sm">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-2 text-text-secondary font-medium">
-                {day}
-              </div>
-            ))}
-            
-            {/* Simple calendar grid for current month */}
-            {Array.from({ length: 35 }, (_, i) => {
-              const day = i - 6; // Adjust for month start
-              const isToday = day === today.getDate();
-              const hasEvent = [15, 16, 22].includes(day); // Mock event days
+        {/* Create Event Button */}
+        <Button 
+          variant="mustard" 
+          className="w-full h-14"
+          onClick={() => setShowCreateForm(!showCreateForm)}
+        >
+          <Plus size={20} className="mr-2" />
+          Create Event
+        </Button>
+
+        {/* Create Event Form */}
+        {showCreateForm && (
+          <TeRentaCard className="animate-slide-up">
+            <form onSubmit={handleCreateEvent} className="space-y-4">
+              <h3 className="font-semibold text-card-foreground mb-4">Create New Event</h3>
               
-              return (
-                <div 
-                  key={i} 
-                  className={`p-2 text-center rounded-lg transition-colors ${
-                    day > 0 && day <= 31 
-                      ? isToday 
-                        ? 'bg-accent text-accent-foreground font-bold' 
-                        : hasEvent
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-card-foreground hover:bg-muted/50'
-                      : 'text-text-secondary/50'
-                  }`}
-                >
-                  {day > 0 && day <= 31 ? day : ''}
-                </div>
-              );
-            })}
-          </div>
-        </TeRentaCard>
+              <div className="space-y-2">
+                <Label htmlFor="title">Event Title *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="e.g., Movie Night"
+                  required
+                />
+              </div>
 
-        {/* Upcoming Events */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-foreground">Upcoming Events</h3>
-          
-          {upcomingEvents.map((event, index) => (
-            <TeRentaCard 
-              key={event.id} 
-              variant="interactive"
-              className="animate-slide-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="flex items-start gap-3">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                  event.status === 'confirmed' 
-                    ? 'bg-accent/10 text-accent' 
-                    : 'bg-muted text-text-secondary'
-                }`}>
-                  <CalendarIcon size={20} />
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="What's this event about?"
+                  className="min-h-20"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="start_date">Start Date *</Label>
+                  <Input
+                    id="start_date"
+                    type="datetime-local"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
+                    required
+                  />
                 </div>
-                
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-medium text-card-foreground">
-                      {event.title}
-                    </h4>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      event.status === 'confirmed' 
-                        ? 'bg-accent/10 text-accent' 
-                        : 'bg-muted text-text-secondary'
-                    }`}>
-                      {event.status}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-1 text-sm text-text-secondary">
-                    <div className="flex items-center gap-2">
-                      <Clock size={14} />
-                      <span>{event.date} at {event.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin size={14} />
-                      <span>{event.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users size={14} />
-                      <span>{event.attendees} attending • {event.group}</span>
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="end_date">End Date</Label>
+                  <Input
+                    id="end_date"
+                    type="datetime-local"
+                    value={formData.end_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
+                  />
                 </div>
               </div>
-            </TeRentaCard>
-          ))}
-        </div>
 
-        {/* Proposals Needing Vote */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-foreground">Need Your Vote</h3>
-          
-          {proposalsNeedingVote.map((proposal, index) => (
-            <TeRentaCard 
-              key={proposal.id} 
-              variant="highlighted"
-              className="animate-slide-up"
-              style={{ animationDelay: `${(index + 3) * 0.1}s` }}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-card-foreground mb-1">
-                    {proposal.title}
-                  </h4>
-                  <p className="text-sm text-text-secondary">
-                    {proposal.group} • {proposal.options} options • {proposal.votes} votes
-                  </p>
-                  <p className="text-xs text-accent mt-1 font-medium">
-                    {proposal.deadline}
-                  </p>
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                  placeholder="Where will this happen?"
+                />
+              </div>
+
+              {groups.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="group_id">Group (Optional)</Label>
+                  <select
+                    id="group_id"
+                    value={formData.group_id}
+                    onChange={(e) => setFormData(prev => ({ ...prev, group_id: e.target.value }))}
+                    className="w-full px-3 py-2 border border-border rounded-md"
+                  >
+                    <option value="">Personal Event</option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <Button variant="mustard" size="sm">
-                  Vote Now
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowCreateForm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="mustard"
+                  disabled={creating}
+                  className="flex-1"
+                >
+                  {creating ? 'Creating...' : 'Create Event'}
                 </Button>
               </div>
-            </TeRentaCard>
-          ))}
-        </div>
-
-        {/* Empty States */}
-        {upcomingEvents.length === 0 && (
-          <TeRentaCard className="text-center py-8">
-            <CalendarIcon className="w-12 h-12 mx-auto mb-4 text-text-secondary" />
-            <h3 className="font-medium text-card-foreground mb-2">
-              No events scheduled
-            </h3>
-            <p className="text-sm text-text-secondary">
-              Create proposals with your groups to start planning
-            </p>
+            </form>
           </TeRentaCard>
         )}
+
+        {/* Events List */}
+        <div className="space-y-4">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-2 text-text-secondary">Loading events...</p>
+            </div>
+          ) : events.length > 0 ? (
+            events.map((event, index) => (
+              <TeRentaCard 
+                key={event.id} 
+                variant="interactive"
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-card-foreground mb-1">
+                        {event.title}
+                      </h3>
+                      {event.description && (
+                        <p className="text-sm text-text-secondary mb-2">
+                          {event.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      event.attendance_status === 'attending' ? 'bg-green-100 text-green-800' :
+                      event.attendance_status === 'not_attending' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {event.attendance_status === 'attending' ? 'Going' :
+                       event.attendance_status === 'not_attending' ? 'Not Going' : 'Pending'}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm text-text-secondary">
+                    <div className="flex items-center gap-2">
+                      <Clock size={14} />
+                      <span>
+                        {new Date(event.start_date).toLocaleString()}
+                        {event.end_date && ` - ${new Date(event.end_date).toLocaleString()}`}
+                      </span>
+                    </div>
+                    
+                    {event.location && (
+                      <div className="flex items-center gap-2">
+                        <MapPin size={14} />
+                        <span>{event.location}</span>
+                      </div>
+                    )}
+                    
+                    {event.group_name && (
+                      <div className="flex items-center gap-2">
+                        <Users size={14} />
+                        <span>{event.group_name}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2">
+                      <Users size={14} />
+                      <span>{event.attendee_count || 0} attending</span>
+                    </div>
+                  </div>
+                  
+                  {/* Attendance Buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant={event.attendance_status === 'attending' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleAttendanceUpdate(event.id, 'attending')}
+                      className="flex-1"
+                    >
+                      <CheckCircle size={14} className="mr-1" />
+                      Going
+                    </Button>
+                    <Button
+                      variant={event.attendance_status === 'not_attending' ? 'destructive' : 'outline'}
+                      size="sm"
+                      onClick={() => handleAttendanceUpdate(event.id, 'not_attending')}
+                      className="flex-1"
+                    >
+                      <XCircle size={14} className="mr-1" />
+                      Can't Go
+                    </Button>
+                  </div>
+                </div>
+              </TeRentaCard>
+            ))
+          ) : (
+            <div className="text-center py-12">
+              <CalendarIcon className="w-16 h-16 mx-auto text-text-secondary mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">No events scheduled</h3>
+              <p className="text-text-secondary mb-6 max-w-sm mx-auto">
+                Create your first event or join a group to see upcoming activities!
+              </p>
+              <Button 
+                variant="mustard" 
+                onClick={() => setShowCreateForm(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Event
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <BottomNavigation />

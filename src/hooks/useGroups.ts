@@ -71,17 +71,7 @@ export function useGroups() {
 
     if (groupError) throw groupError;
 
-    // Add creator as admin
-    const { error: memberError } = await supabase
-      .from('group_members')
-      .insert({
-        group_id: group.id,
-        user_id: user.id,
-        role: 'admin'
-      });
-
-    if (memberError) throw memberError;
-
+    // The trigger will automatically add creator as admin
     await fetchGroups();
     return group;
   };
