@@ -18,7 +18,7 @@ export interface Event {
   attendee_count?: number;
 }
 
-export function useEvents() {
+export function useEvents(groupId?: string) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -27,7 +27,7 @@ export function useEvents() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('events')
         .select(`
           *,
@@ -36,7 +36,11 @@ export function useEvents() {
         `)
         .order('start_date', { ascending: true });
 
-      if (error) throw error;
+      if (groupId) {
+        query = query.eq('group_id', groupId);
+      }
+
+      const { data, error } = await query;
 
       const formattedEvents = data?.map(event => ({
         ...event,
@@ -55,7 +59,7 @@ export function useEvents() {
 
   useEffect(() => {
     fetchEvents();
-  }, [user]);
+  }, [user, groupId]);
 
   const createEvent = async (eventData: {
     title: string;

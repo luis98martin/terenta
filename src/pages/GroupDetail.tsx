@@ -1,0 +1,296 @@
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { AppHeader } from "@/components/AppHeader";
+import { BottomNavigation } from "@/components/BottomNavigation";
+import { TeRentaCard } from "@/components/TeRentaCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MessageCircle, Vote, Calendar, Users, Send, Plus, ThumbsUp, ThumbsDown, Minus } from "lucide-react";
+import { useGroups } from "@/hooks/useGroups";
+import { useChats, useMessages } from "@/hooks/useChats";
+import { useProposals } from "@/hooks/useProposals";
+import { useEvents } from "@/hooks/useEvents";
+import { useToast } from "@/hooks/use-toast";
+
+export default function GroupDetail() {
+  const { groupId } = useParams<{ groupId: string }>();
+  const { groups } = useGroups();
+  const { chats, createChat } = useChats();
+  const { proposals, createProposal, vote } = useProposals(groupId);
+  const { events } = useEvents(groupId);
+  const { toast } = useToast();
+
+  const [activeTab, setActiveTab] = useState("chat");
+  const [newMessage, setNewMessage] = useState("");
+  const [chatId, setChatId] = useState<string | null>(null);
+
+  // Find the current group
+  const group = groups.find(g => g.id === groupId);
+
+  // Find or create group chat
+  useEffect(() => {
+    const groupChat = chats.find(c => c.group_id === groupId);
+    if (groupChat) {
+      setChatId(groupChat.id);
+    } else if (group) {
+      // Create chat for this group
+      createChat({
+        name: `${group.name} Chat`,
+        type: 'group' as const,
+        group_id: groupId!
+      }).then((chat) => {
+        setChatId(chat.id);
+      });
+    }
+  }, [chats, group, groupId, createChat]);
+
+  const { messages, sendMessage } = useMessages(chatId);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !chatId) return;
+
+    try {
+      await sendMessage(newMessage.trim());
+      setNewMessage("");
+    } catch (error: any) {
+      toast({
+        title: "Failed to send message",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleVote = async (proposalId: string, voteType: 'yes' | 'no' | 'abstain') => {
+    try {
+      await vote(proposalId, voteType);
+      toast({
+        title: "Vote recorded",
+        description: `Your ${voteType} vote has been recorded`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to vote",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (!group) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <AppHeader title="Group Not Found" />
+        <div className="px-4 py-6 max-w-lg mx-auto">
+          <TeRentaCard>
+            <div className="text-center">
+              <p className="text-text-secondary mb-4">This group doesn't exist or you don't have access to it.</p>
+              <Button variant="mustard" asChild>
+                <Link to="/groups">Back to Groups</Link>
+              </Button>
+            </div>
+          </TeRentaCard>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <AppHeader title={group.name} />
+      
+      <div className="px-4 py-6 max-w-lg mx-auto">
+        {/* Group Info */}
+        <TeRentaCard className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
+              <Users className="text-accent" size={20} />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-semibold text-card-foreground">{group.name}</h2>
+              <p className="text-sm text-text-secondary">{group.member_count} members</p>
+            </div>
+          </div>
+          {group.description && (
+            <p className="text-sm text-text-secondary mb-3">{group.description}</p>
+          )}
+          <div className="text-xs text-text-secondary">
+            Invite Code: <span className="font-mono bg-background/50 px-2 py-1 rounded">{group.invite_code}</span>
+          </div>
+        </TeRentaCard>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageCircle size={16} />
+              Chat
+            </TabsTrigger>
+            <TabsTrigger value="proposals" className="flex items-center gap-2">
+              <Vote size={16} />
+              Proposals
+            </TabsTrigger>
+            <TabsTrigger value="events" className="flex items-center gap-2">
+              <Calendar size={16} />
+              Events
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Chat Tab */}
+          <TabsContent value="chat" className="space-y-4">
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {messages.map((message) => (
+                <TeRentaCard key={message.id}>
+                  <div className="text-sm">
+                    <div className="font-medium text-card-foreground mb-1">{message.user_id}</div>
+                    <div className="text-text-secondary">{message.content}</div>
+                    <div className="text-xs text-text-secondary mt-1">
+                      {new Date(message.created_at).toLocaleString()}
+                    </div>
+                  </div>
+                </TeRentaCard>
+              ))}
+              {messages.length === 0 && (
+                <div className="text-center py-8">
+                  <MessageCircle className="w-12 h-12 mx-auto text-text-secondary mb-2" />
+                  <p className="text-text-secondary">No messages yet. Start the conversation!</p>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Type a message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              />
+              <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
+                <Send size={16} />
+              </Button>
+            </div>
+          </TabsContent>
+
+          {/* Proposals Tab */}
+          <TabsContent value="proposals" className="space-y-4">
+            <Button variant="mustard" className="w-full" asChild>
+              <Link to={`/groups/${groupId}/proposals/create`}>
+                <Plus size={16} className="mr-2" />
+                Create Proposal
+              </Link>
+            </Button>
+
+            <div className="space-y-3">
+              {proposals.map((proposal) => (
+                <TeRentaCard key={proposal.id} variant="interactive">
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-card-foreground mb-1">{proposal.title}</h3>
+                        {proposal.description && (
+                          <p className="text-sm text-text-secondary mb-2">{proposal.description}</p>
+                        )}
+                      </div>
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        proposal.status === 'active' ? 'bg-green-100 text-green-800' :
+                        proposal.status === 'passed' ? 'bg-blue-100 text-blue-800' :
+                        proposal.status === 'failed' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {proposal.status}
+                      </div>
+                    </div>
+
+                    {/* Voting Results */}
+                    <div className="text-sm">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-green-600">Yes: {proposal.yes_votes || 0}</span>
+                        <span className="text-red-600">No: {proposal.no_votes || 0}</span>
+                        <span className="text-gray-600">Abstain: {proposal.abstain_votes || 0}</span>
+                      </div>
+                    </div>
+
+                    {/* Voting Buttons */}
+                    {proposal.status === 'active' && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant={proposal.user_vote === 'yes' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => handleVote(proposal.id, 'yes')}
+                          className="flex-1"
+                        >
+                          <ThumbsUp size={14} className="mr-1" />
+                          Yes
+                        </Button>
+                        <Button
+                          variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
+                          size="sm"
+                          onClick={() => handleVote(proposal.id, 'no')}
+                          className="flex-1"
+                        >
+                          <ThumbsDown size={14} className="mr-1" />
+                          No
+                        </Button>
+                        <Button
+                          variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
+                          size="sm"
+                          onClick={() => handleVote(proposal.id, 'abstain')}
+                          className="flex-1"
+                        >
+                          <Minus size={14} className="mr-1" />
+                          Abstain
+                        </Button>
+                      </div>
+                    )}
+
+                    {proposal.user_vote && proposal.status === 'active' && (
+                      <div className="text-xs text-center text-text-secondary bg-background/50 py-2 rounded">
+                        You voted: {proposal.user_vote} • Click any button to change your vote
+                      </div>
+                    )}
+                  </div>
+                </TeRentaCard>
+              ))}
+              {proposals.length === 0 && (
+                <div className="text-center py-8">
+                  <Vote className="w-12 h-12 mx-auto text-text-secondary mb-2" />
+                  <p className="text-text-secondary">No proposals yet. Create the first one!</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Events Tab */}
+          <TabsContent value="events" className="space-y-4">
+            <div className="space-y-3">
+              {events.map((event) => (
+                <TeRentaCard key={event.id} variant="interactive">
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-card-foreground">{event.title}</h3>
+                    {event.description && (
+                      <p className="text-sm text-text-secondary">{event.description}</p>
+                    )}
+                    <div className="text-sm text-text-secondary">
+                      {new Date(event.start_date).toLocaleString()}
+                    </div>
+                    {event.location && (
+                      <div className="text-sm text-text-secondary">📍 {event.location}</div>
+                    )}
+                  </div>
+                </TeRentaCard>
+              ))}
+              {events.length === 0 && (
+                <div className="text-center py-8">
+                  <Calendar className="w-12 h-12 mx-auto text-text-secondary mb-2" />
+                  <p className="text-text-secondary">No events yet. Events are created from accepted proposals!</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <BottomNavigation />
+    </div>
+  );
+}

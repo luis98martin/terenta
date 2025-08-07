@@ -9,10 +9,10 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Groups from "./pages/Groups";
 import CreateGroup from "./pages/CreateGroup";
-import Chat from "./pages/Chat";
+import GroupDetail from "./pages/GroupDetail";
+import CreateProposal from "./pages/CreateProposal";
 import Calendar from "./pages/Calendar";
 import Profile from "./pages/Profile";
-import Proposals from "./pages/Proposals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,8 +32,9 @@ const App = () => (
           <Route path="/" element={<AuthGuard><Dashboard /></AuthGuard>} />
           <Route path="/groups" element={<AuthGuard><Groups /></AuthGuard>} />
           <Route path="/groups/create" element={<AuthGuard><CreateGroup /></AuthGuard>} />
+          <Route path="/groups/:groupId" element={<AuthGuard><GroupDetail /></AuthGuard>} />
+          <Route path="/groups/:groupId/proposals/create" element={<AuthGuard><CreateProposal /></AuthGuard>} />
           <Route path="/calendar" element={<AuthGuard><Calendar /></AuthGuard>} />
-          <Route path="/proposals" element={<AuthGuard><Proposals /></AuthGuard>} />
           <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
           
           {/* Catch-all route */}

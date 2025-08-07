@@ -19,11 +19,6 @@ const navigationItems = [
     path: "/calendar" 
   },
   { 
-    icon: Vote, 
-    label: "Votes", 
-    path: "/proposals" 
-  },
-  { 
     icon: User, 
     label: "Profile", 
     path: "/profile" 

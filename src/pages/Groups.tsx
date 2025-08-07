@@ -98,50 +98,55 @@ export default function Groups() {
             </div>
           ) : groups.length > 0 ? (
             groups.map((group, index) => (
-              <TeRentaCard 
-                key={group.id} 
-                variant="interactive" 
-                className={`animate-slide-up cursor-pointer`}
-                style={{ animationDelay: `${index * 0.1}s` }}
+              <Link 
+                key={group.id}
+                to={`/groups/${group.id}`}
+                className="block"
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                    <Users className="text-accent" size={20} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-card-foreground truncate">
-                        {group.name}
-                      </h3>
-                      <span className="text-xs text-text-secondary bg-background/50 px-2 py-1 rounded">
-                        {group.user_role}
-                      </span>
+                <TeRentaCard 
+                  variant="interactive" 
+                  className={`animate-slide-up cursor-pointer hover:bg-card/80 transition-colors`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
+                      <Users className="text-accent" size={20} />
                     </div>
-                    {group.description && (
-                      <p className="text-sm text-text-secondary mb-3 line-clamp-2">
-                        {group.description}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-xs text-text-secondary">
-                        <span className="flex items-center gap-1">
-                          <Users size={14} />
-                          {group.member_count} members
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-card-foreground truncate">
+                          {group.name}
+                        </h3>
+                        <span className="text-xs text-text-secondary bg-background/50 px-2 py-1 rounded">
+                          {group.user_role}
                         </span>
-                        <span>Code: {group.invite_code}</span>
                       </div>
-                      <div className="flex gap-1">
-                        <Button variant="glass" size="icon-sm" className="text-accent">
-                          <MessageCircle size={16} />
-                        </Button>
-                        <Button variant="glass" size="icon-sm" className="text-accent">
-                          <Calendar size={16} />
-                        </Button>
+                      {group.description && (
+                        <p className="text-sm text-text-secondary mb-3 line-clamp-2">
+                          {group.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 text-xs text-text-secondary">
+                          <span className="flex items-center gap-1">
+                            <Users size={14} />
+                            {group.member_count} members
+                          </span>
+                          <span>Code: {group.invite_code}</span>
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="text-accent p-1">
+                            <MessageCircle size={16} />
+                          </div>
+                          <div className="text-accent p-1">
+                            <Calendar size={16} />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </TeRentaCard>
+                </TeRentaCard>
+              </Link>
             ))
           ) : (
             <div className="text-center py-12">
