@@ -14,6 +14,7 @@ import { useEvents } from "@/hooks/useEvents";
 import { useToast } from "@/hooks/use-toast";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -49,7 +50,7 @@ export default function GroupDetail() {
     }
   }, [chats, group, groupId, createChat]);
 
-  const { messages, sendMessage } = useMessages(chatId);
+  const { messages, sendMessage, refetch: refetchMessages } = useMessages(chatId);
 
   // Fetch profiles for message authors
   useEffect(() => {
@@ -58,6 +59,32 @@ export default function GroupDetail() {
       fetchProfiles(userIds);
     }
   }, [messages, fetchProfiles]);
+
+  // Set up real-time subscription for messages
+  useEffect(() => {
+    if (!chatId) return;
+
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `chat_id=eq.${chatId}`
+        },
+        () => {
+          // Refetch messages when a new message is inserted
+          refetchMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [chatId, refetchMessages]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !chatId) return;
