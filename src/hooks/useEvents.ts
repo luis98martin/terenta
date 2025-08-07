@@ -37,7 +37,24 @@ export function useEvents(groupId?: string) {
         .order('start_date', { ascending: true });
 
       if (groupId) {
+        // Fetch events for specific group
         query = query.eq('group_id', groupId);
+      } else {
+        // Fetch events from all user's groups for calendar view
+        const { data: userGroups } = await supabase
+          .from('group_members')
+          .select('group_id')
+          .eq('user_id', user.id);
+
+        if (userGroups && userGroups.length > 0) {
+          const groupIds = userGroups.map(g => g.group_id);
+          query = query.in('group_id', groupIds);
+        } else {
+          // User has no groups, return empty events
+          setEvents([]);
+          setLoading(false);
+          return;
+        }
       }
 
       const { data, error } = await query;

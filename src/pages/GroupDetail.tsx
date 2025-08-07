@@ -240,7 +240,8 @@ export default function GroupDetail() {
             <div className="space-y-3">
               {/* Show proposals AND events from proposals here */}
               {proposals.map((proposal) => (
-                <TeRentaCard key={proposal.id} variant="interactive">
+                <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`}>
+                <TeRentaCard variant="interactive">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -308,6 +309,7 @@ export default function GroupDetail() {
                     )}
                   </div>
                 </TeRentaCard>
+                </Link>
               ))}
               {/* Show upcoming events from proposals */}
               {events.map((event) => (

@@ -11,6 +11,7 @@ import Groups from "./pages/Groups";
 import CreateGroup from "./pages/CreateGroup";
 import GroupDetail from "./pages/GroupDetail";
 import CreateProposal from "./pages/CreateProposal";
+import ProposalDetail from "./pages/ProposalDetail";
 import Calendar from "./pages/Calendar";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/groups/create" element={<AuthGuard><CreateGroup /></AuthGuard>} />
           <Route path="/groups/:groupId" element={<AuthGuard><GroupDetail /></AuthGuard>} />
           <Route path="/groups/:groupId/proposals/create" element={<AuthGuard><CreateProposal /></AuthGuard>} />
+          <Route path="/groups/:groupId/proposals/:proposalId" element={<AuthGuard><ProposalDetail /></AuthGuard>} />
           <Route path="/calendar" element={<AuthGuard><Calendar /></AuthGuard>} />
           <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
           
