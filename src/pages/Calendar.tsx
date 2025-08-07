@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar as CalendarIcon, Plus, MapPin, Users, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useEvents } from "@/hooks/useEvents";
 import { useGroups } from "@/hooks/useGroups";
 import { useToast } from "@/hooks/use-toast";
@@ -30,10 +31,10 @@ export default function Calendar() {
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title.trim() || !formData.start_date) {
+    if (!formData.title.trim() || !formData.start_date || !formData.group_id) {
       toast({
         title: "Missing required fields",
-        description: "Please enter a title and start date",
+        description: "Please enter a title, start date, and select a group",
         variant: "destructive",
       });
       return;
@@ -47,7 +48,7 @@ export default function Calendar() {
         start_date: formData.start_date,
         end_date: formData.end_date || undefined,
         location: formData.location.trim() || undefined,
-        group_id: formData.group_id || undefined,
+        group_id: formData.group_id,
       });
 
       toast({
@@ -97,14 +98,27 @@ export default function Calendar() {
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
         {/* Create Event Button */}
-        <Button 
-          variant="mustard" 
-          className="w-full h-14"
-          onClick={() => setShowCreateForm(!showCreateForm)}
-        >
-          <Plus size={20} className="mr-2" />
-          Create Event
-        </Button>
+        {groups.length > 0 ? (
+          <Button 
+            variant="mustard" 
+            className="w-full h-14"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+          >
+            <Plus size={20} className="mr-2" />
+            Create Event
+          </Button>
+        ) : (
+          <TeRentaCard variant="highlighted">
+            <div className="text-center">
+              <p className="text-sm text-text-secondary mb-2">
+                You need to join a group to create events
+              </p>
+              <Button variant="mustard" size="sm" asChild>
+                <Link to="/groups">Join a Group</Link>
+              </Button>
+            </div>
+          </TeRentaCard>
+        )}
 
         {/* Create Event Form */}
         {showCreateForm && (
@@ -166,24 +180,28 @@ export default function Calendar() {
                 />
               </div>
 
-              {groups.length > 0 && (
-                <div className="space-y-2">
-                  <Label htmlFor="group_id">Group (Optional)</Label>
-                  <select
-                    id="group_id"
-                    value={formData.group_id}
-                    onChange={(e) => setFormData(prev => ({ ...prev, group_id: e.target.value }))}
-                    className="w-full px-3 py-2 border border-border rounded-md"
-                  >
-                    <option value="">Personal Event</option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="group_id">Group *</Label>
+                <select
+                  id="group_id"
+                  value={formData.group_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, group_id: e.target.value }))}
+                  className="w-full px-3 py-2 border border-border rounded-md"
+                  required
+                >
+                  <option value="">Select a group...</option>
+                  {groups.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+                </select>
+                {groups.length === 0 && (
+                  <p className="text-sm text-text-secondary">
+                    You need to join a group first to create events
+                  </p>
+                )}
+              </div>
 
               <div className="flex gap-2 pt-2">
                 <Button

@@ -1,4 +1,4 @@
-import { Home, Users, MessageCircle, Calendar, User } from "lucide-react";
+import { Home, Users, MessageCircle, Calendar, Vote } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -20,13 +20,13 @@ const navigationItems = [
   },
   { 
     icon: Calendar, 
-    label: "Calendar", 
+    label: "Events", 
     path: "/calendar" 
   },
   { 
-    icon: User, 
-    label: "Profile", 
-    path: "/profile" 
+    icon: Vote, 
+    label: "Votes", 
+    path: "/proposals" 
   },
 ];
 
