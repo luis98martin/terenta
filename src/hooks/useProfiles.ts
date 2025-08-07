@@ -75,7 +75,11 @@ export function useProfiles() {
 
   const getDisplayName = (userId: string) => {
     const profile = profiles[userId];
-    if (!profile) return 'Loading...';
+    if (!profile) {
+      // Auto-fetch profile if not already loaded
+      fetchProfile(userId);
+      return 'Loading...';
+    }
     
     if (profile.first_name && profile.last_name) {
       return `${profile.first_name} ${profile.last_name}`;
