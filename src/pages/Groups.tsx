@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Users, Hash, Search } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const groups = [
   { 
@@ -70,9 +71,12 @@ export default function Groups() {
           <Button 
             variant="mustard-outline" 
             className="h-14 flex-col"
+            asChild
           >
-            <Plus size={20} className="mb-1" />
-            Create Group
+            <Link to="/groups/create">
+              <Plus size={20} className="mb-1" />
+              Create Group
+            </Link>
           </Button>
         </div>
 

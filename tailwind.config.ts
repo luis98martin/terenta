@@ -62,12 +62,24 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// TeRenta? custom colors
-				burgundy: 'hsl(var(--burgundy))',
-				mustard: 'hsl(var(--mustard))',
-				surface: 'hsl(var(--surface))',
+				// TeRenta? enhanced design tokens
+				burgundy: {
+					DEFAULT: 'hsl(var(--burgundy))',
+					light: 'hsl(var(--burgundy-light))',
+					dark: 'hsl(var(--burgundy-dark))'
+				},
+				mustard: {
+					DEFAULT: 'hsl(var(--mustard))',
+					light: 'hsl(var(--mustard-light))',
+					dark: 'hsl(var(--mustard-dark))'
+				},
+				surface: {
+					DEFAULT: 'hsl(var(--surface))',
+					elevated: 'hsl(var(--surface-elevated))'
+				},
 				'text-primary': 'hsl(var(--text-primary))',
-				'text-secondary': 'hsl(var(--text-secondary))'
+				'text-secondary': 'hsl(var(--text-secondary))',
+				'text-tertiary': 'hsl(var(--text-tertiary))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

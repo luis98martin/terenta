@@ -7,6 +7,7 @@ import Welcome from "./pages/Welcome";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Groups from "./pages/Groups";
+import CreateGroup from "./pages/CreateGroup";
 import Chat from "./pages/Chat";
 import Calendar from "./pages/Calendar";
 import Profile from "./pages/Profile";
@@ -28,6 +29,7 @@ const App = () => (
           {/* Main App Routes */}
           <Route path="/" element={<Dashboard />} />
           <Route path="/groups" element={<Groups />} />
+          <Route path="/groups/create" element={<CreateGroup />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/profile" element={<Profile />} />

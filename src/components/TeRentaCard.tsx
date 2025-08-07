@@ -12,10 +12,10 @@ export function TeRentaCard({ children, className, variant = "default", style }:
   return (
     <div
       className={cn(
-        "bg-surface rounded-lg p-5 transition-all duration-200",
-        variant === "default" && "shadow-[0_4px_12px_hsl(var(--burgundy)/0.1)]",
-        variant === "interactive" && "shadow-[0_4px_12px_hsl(var(--burgundy)/0.1)] hover:shadow-[0_6px_16px_hsl(var(--burgundy)/0.15)] hover:scale-[1.02] cursor-pointer",
-        variant === "highlighted" && "shadow-[0_6px_16px_hsl(var(--mustard)/0.2)] border border-accent/20",
+        "bg-surface rounded-2xl p-6 transition-all duration-200 border border-border/50",
+        variant === "default" && "shadow-card hover:shadow-card-hover",
+        variant === "interactive" && "shadow-card hover:shadow-card-hover hover:scale-[1.02] cursor-pointer hover:border-accent/20",
+        variant === "highlighted" && "shadow-accent border-accent/30 bg-gradient-to-br from-surface to-accent/5",
         className
       )}
       style={style}
