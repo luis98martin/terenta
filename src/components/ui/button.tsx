@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-md hover:shadow-lg",
+        default: "bg-primary text-primary-foreground active:bg-primary/90 rounded-xl shadow-md",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl shadow-md",
         outline:
@@ -19,10 +19,10 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent/10 hover:text-accent rounded-xl",
         link: "text-primary underline-offset-4 hover:underline",
         // TeRenta? enhanced variants
-        mustard: "bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl shadow-accent hover:shadow-accent-lg hover:scale-105 font-semibold",
-        "mustard-outline": "border-2 border-accent text-accent bg-transparent hover:bg-accent hover:text-accent-foreground rounded-xl shadow-sm hover:shadow-accent",
-        hero: "bg-gradient-to-r from-accent via-accent to-mustard-dark text-accent-foreground hover:from-accent/90 hover:via-accent/90 hover:to-mustard-dark/90 rounded-xl shadow-accent hover:shadow-accent-lg hover:scale-105 font-bold text-base",
-        glass: "bg-surface/80 backdrop-blur-sm border border-border/50 hover:bg-surface/90 rounded-xl shadow-sm hover:shadow-md",
+        mustard: "bg-accent text-accent-foreground active:bg-accent/90 rounded-xl shadow-accent font-semibold",
+        "mustard-outline": "border-2 border-accent text-accent bg-transparent active:bg-accent active:text-accent-foreground rounded-xl shadow-sm",
+        hero: "bg-gradient-to-r from-accent via-accent to-mustard-dark text-accent-foreground active:from-accent/90 active:via-accent/90 active:to-mustard-dark/90 rounded-xl shadow-accent font-bold text-base",
+        glass: "bg-surface/80 backdrop-blur-sm border border-border/50 active:bg-surface/90 rounded-xl shadow-sm",
       },
       size: {
         default: "h-12 px-6 py-3",

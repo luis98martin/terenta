@@ -9,8 +9,8 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* TeRenta? Design System - Enhanced Colors */
-    --background: 0 74% 11%;           /* Deep burgundy #A41C1C */
-    --foreground: 0 0% 98%;            /* Almost white text */
+    --background: 0 0% 100%;           /* White background */
+    --foreground: 0 0% 5%;             /* Dark text */
 
     --card: 0 0% 100%;                 /* Pure white cards */
     --card-foreground: 0 0% 5%;        /* Dark text on cards */
