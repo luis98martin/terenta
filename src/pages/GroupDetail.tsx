@@ -13,6 +13,7 @@ import { useProposals } from "@/hooks/useProposals";
 import { useEvents } from "@/hooks/useEvents";
 import { useToast } from "@/hooks/use-toast";
 import { useProfiles } from "@/hooks/useProfiles";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -22,6 +23,7 @@ export default function GroupDetail() {
   const { events } = useEvents(groupId);
   const { toast } = useToast();
   const { getDisplayName, fetchProfiles } = useProfiles();
+  const { user } = useAuth();
 
   const [activeTab, setActiveTab] = useState("chat");
   const [newMessage, setNewMessage] = useState("");
@@ -149,24 +151,40 @@ export default function GroupDetail() {
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="space-y-4">
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {messages.map((message) => (
-                <TeRentaCard key={message.id}>
-                  <div className="text-sm">
-                    <div className="font-medium text-card-foreground mb-1">
-                      {getDisplayName(message.user_id)}
-                    </div>
-                    <div className="text-text-secondary">{message.content}</div>
-                    <div className="text-xs text-text-secondary mt-1">
-                      {new Date(message.created_at).toLocaleString()}
+            <div className="space-y-3 max-h-96 overflow-y-auto px-2">
+              {messages.map((message) => {
+                const isOwnMessage = message.user_id === user?.id;
+                return (
+                  <div 
+                    key={message.id} 
+                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div 
+                      className={`max-w-[70%] p-3 rounded-2xl shadow-sm ${
+                        isOwnMessage 
+                          ? 'bg-primary text-primary-foreground rounded-br-md' 
+                          : 'bg-surface text-foreground rounded-bl-md border border-border'
+                      }`}
+                    >
+                      <div className="flex flex-col space-y-1">
+                        {!isOwnMessage && (
+                          <span className="font-medium text-xs opacity-70">
+                            {getDisplayName(message.user_id)}
+                          </span>
+                        )}
+                        <p className="text-sm leading-relaxed">{message.content}</p>
+                        <span className={`text-xs opacity-60 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
+                          {new Date(message.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </TeRentaCard>
-              ))}
+                );
+              })}
               {messages.length === 0 && (
                 <div className="text-center py-8">
-                  <MessageCircle className="w-12 h-12 mx-auto text-text-secondary mb-2" />
-                  <p className="text-text-secondary">No messages yet. Start the conversation!</p>
+                  <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
                 </div>
               )}
             </div>
