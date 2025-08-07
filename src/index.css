@@ -8,35 +8,55 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* TeRenta? Design System - Burgundy & Mustard Theme */
+    --background: 0 74% 11%;        /* Deep burgundy background */
+    --foreground: 0 0% 100%;        /* White text on burgundy */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;              /* White cards */
+    --card-foreground: 0 0% 0%;     /* Black text on white cards */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 74% 11%;           /* Burgundy primary */
+    --primary-foreground: 0 0% 100%; /* White text on burgundy */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 45 100% 55%;       /* Mustard secondary */
+    --secondary-foreground: 0 0% 0%; /* Black text on mustard */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 0 0% 95%;              /* Light gray */
+    --muted-foreground: 0 0% 40%;   /* Medium gray text */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 45 100% 55%;          /* Mustard accent */
+    --accent-foreground: 0 0% 0%;   /* Black text on mustard */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 0 0% 90%;             /* Light border */
+    --input: 0 0% 95%;              /* Light input background */
+    --ring: 45 100% 55%;            /* Mustard focus ring */
 
-    --radius: 0.5rem;
+    --radius: 1rem;                 /* 16px rounded corners */
+
+    /* Custom TeRenta? tokens */
+    --burgundy: 0 74% 11%;          /* #A41C1C */
+    --mustard: 45 100% 55%;         /* #F5A623 */
+    --surface: 0 0% 100%;           /* White surfaces */
+    --text-primary: 0 0% 0%;        /* Black text */
+    --text-secondary: 0 0% 40%;     /* Gray text */
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--burgundy)), hsl(0 74% 8%));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--mustard)), hsl(45 100% 50%));
+    
+    /* Shadows */
+    --shadow-card: 0 4px 12px hsl(var(--burgundy) / 0.1);
+    --shadow-button: 0 2px 8px hsl(var(--mustard) / 0.2);
+    
+    /* Animations */
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     --sidebar-background: 0 0% 98%;
 
