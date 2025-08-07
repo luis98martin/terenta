@@ -52,7 +52,7 @@ export default function GroupDetail() {
   // Fetch profiles for message authors
   useEffect(() => {
     if (messages.length > 0) {
-      const userIds = messages.map(m => m.user_id);
+      const userIds = [...new Set(messages.map(m => m.user_id))];
       fetchProfiles(userIds);
     }
   }, [messages, fetchProfiles]);

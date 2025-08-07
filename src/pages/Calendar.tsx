@@ -1,80 +1,28 @@
-import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar as CalendarIcon, Plus, MapPin, Users, Clock, CheckCircle, XCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Calendar as CalendarIcon, MapPin, Users, Clock, CheckCircle, XCircle } from "lucide-react";
 import { useEvents } from "@/hooks/useEvents";
-import { useGroups } from "@/hooks/useGroups";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export default function Calendar() {
-  const { events, loading, createEvent, updateAttendance } = useEvents();
-  const { groups } = useGroups();
+  const { events, loading, updateAttendance } = useEvents();
   const { toast } = useToast();
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [creating, setCreating] = useState(false);
-  
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    start_date: '',
-    end_date: '',
-    location: '',
-    group_id: ''
-  });
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
-  const handleCreateEvent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.title.trim() || !formData.start_date || !formData.group_id) {
-      toast({
-        title: "Missing required fields",
-        description: "Please enter a title, start date, and select a group",
-        variant: "destructive",
-      });
-      return;
-    }
+  // Filter events for selected date
+  const eventsForSelectedDate = selectedDate 
+    ? events.filter(event => {
+        const eventDate = new Date(event.start_date);
+        return eventDate.toDateString() === selectedDate.toDateString();
+      })
+    : events;
 
-    setCreating(true);
-    try {
-      await createEvent({
-        title: formData.title.trim(),
-        description: formData.description.trim() || undefined,
-        start_date: formData.start_date,
-        end_date: formData.end_date || undefined,
-        location: formData.location.trim() || undefined,
-        group_id: formData.group_id,
-      });
-
-      toast({
-        title: "Event created!",
-        description: `"${formData.title}" has been scheduled`,
-      });
-
-      setFormData({
-        title: '',
-        description: '',
-        start_date: '',
-        end_date: '',
-        location: '',
-        group_id: ''
-      });
-      setShowCreateForm(false);
-    } catch (error: any) {
-      toast({
-        title: "Failed to create event",
-        description: error.message || "Something went wrong",
-        variant: "destructive",
-      });
-    } finally {
-      setCreating(false);
-    }
-  };
+  // Get dates that have events for calendar highlighting
+  const eventDates = events.map(event => new Date(event.start_date));
 
   const handleAttendanceUpdate = async (eventId: string, status: 'attending' | 'not_attending') => {
     try {
@@ -97,28 +45,44 @@ export default function Calendar() {
       <AppHeader title="Calendar" />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
-        {/* Info about event creation */}
-        <TeRentaCard variant="highlighted">
-          <div className="text-center">
-            <p className="text-sm text-text-secondary mb-2">
-              Events are automatically created from accepted proposals
-            </p>
-            <Button variant="mustard" size="sm" asChild>
-              <Link to="/proposals">Create Proposal</Link>
-            </Button>
+        {/* Calendar Component */}
+        <TeRentaCard>
+          <div className="p-2">
+            <CalendarComponent
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-md"
+              modifiers={{
+                hasEvent: eventDates
+              }}
+              modifiersStyles={{
+                hasEvent: { 
+                  backgroundColor: 'hsl(var(--primary))', 
+                  color: 'hsl(var(--primary-foreground))',
+                  borderRadius: '50%'
+                }
+              }}
+            />
           </div>
         </TeRentaCard>
 
-
-        {/* Events List */}
+        {/* Events List for Selected Date */}
         <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">
+              {selectedDate ? `Events for ${selectedDate.toLocaleDateString()}` : 'All Events'}
+            </h2>
+            <p className="text-sm text-text-secondary">{eventsForSelectedDate.length} events</p>
+          </div>
+          
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               <p className="mt-2 text-text-secondary">Loading events...</p>
             </div>
-          ) : events.length > 0 ? (
-            events.map((event, index) => (
+          ) : eventsForSelectedDate.length > 0 ? (
+            eventsForSelectedDate.map((event, index) => (
               <TeRentaCard 
                 key={event.id} 
                 variant="interactive"
@@ -138,9 +102,9 @@ export default function Calendar() {
                       )}
                     </div>
                     <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      event.attendance_status === 'attending' ? 'bg-green-100 text-green-800' :
-                      event.attendance_status === 'not_attending' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
+                      event.attendance_status === 'attending' ? 'bg-green-500/20 text-green-700 dark:text-green-300' :
+                      event.attendance_status === 'not_attending' ? 'bg-red-500/20 text-red-700 dark:text-red-300' :
+                      'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300'
                     }`}>
                       {event.attendance_status === 'attending' ? 'Going' :
                        event.attendance_status === 'not_attending' ? 'Not Going' : 'Pending'}
@@ -203,19 +167,12 @@ export default function Calendar() {
           ) : (
             <div className="text-center py-12">
               <CalendarIcon className="w-16 h-16 mx-auto text-text-secondary mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No events scheduled</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                {selectedDate ? 'No events on this date' : 'No events scheduled'}
+              </h3>
               <p className="text-text-secondary mb-6 max-w-sm mx-auto">
-                Events are created automatically from accepted proposals with event dates!
+                {selectedDate ? 'Try selecting a different date or check upcoming events.' : 'Events appear here when they are created from accepted proposals.'}
               </p>
-              <Button 
-                variant="mustard" 
-                asChild
-              >
-                <Link to="/proposals">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Proposal
-                </Link>
-              </Button>
             </div>
           )}
         </div>

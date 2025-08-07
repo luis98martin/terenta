@@ -108,6 +108,8 @@ export function useProposals(groupId?: string) {
         proposal_id: proposalId,
         user_id: user.id,
         vote_type: voteType
+      }, {
+        onConflict: 'proposal_id,user_id'
       });
 
     if (error) throw error;
