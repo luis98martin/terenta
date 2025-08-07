@@ -154,8 +154,15 @@ export default function GroupDetail() {
           {group.description && (
             <p className="text-sm text-text-secondary mb-3">{group.description}</p>
           )}
-          <div className="text-xs text-text-secondary">
-            Invite Code: <span className="font-mono bg-background/50 px-2 py-1 rounded">{group.invite_code}</span>
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-text-secondary">
+              Invite Code: <span className="font-mono bg-background/50 px-2 py-1 rounded">{group.invite_code}</span>
+            </div>
+            {group.user_role === 'admin' && (
+              <Button variant="outline" size="sm" asChild>
+                <Link to={`/groups/${groupId}/manage`}>Manage</Link>
+              </Button>
+            )}
           </div>
         </TeRentaCard>
 

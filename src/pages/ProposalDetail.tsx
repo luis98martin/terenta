@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { ThumbsUp, ThumbsDown, Minus, MessageSquare, Calendar, ArrowLeft, Send } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ThumbsUp, ThumbsDown, Minus, MessageSquare, Calendar, ArrowLeft, Send, Edit2, Upload, X } from "lucide-react";
 import { useProposals } from "@/hooks/useProposals";
 import { useToast } from "@/hooks/use-toast";
 import { useProfiles } from "@/hooks/useProfiles";
@@ -23,6 +25,13 @@ interface ProposalComment {
   updated_at: string;
 }
 
+interface Vote {
+  id: string;
+  user_id: string;
+  vote_type: 'yes' | 'no' | 'abstain';
+  created_at: string;
+}
+
 export default function ProposalDetail() {
   const { groupId, proposalId } = useParams<{ groupId: string; proposalId: string }>();
   const navigate = useNavigate();
@@ -32,40 +41,63 @@ export default function ProposalDetail() {
   const { user } = useAuth();
 
   const [comments, setComments] = useState<ProposalComment[]>([]);
+  const [votes, setVotes] = useState<Vote[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [editedDescription, setEditedDescription] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Find the current proposal
   const proposal = proposals.find(p => p.id === proposalId);
 
-  // Fetch comments
-  const fetchComments = async () => {
+  // Fetch comments and votes
+  const fetchData = async () => {
     if (!proposalId) return;
 
     try {
-      const { data, error } = await supabase
+      // Fetch comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('proposal_comments')
         .select('*')
         .eq('proposal_id', proposalId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      setComments(data || []);
+      if (commentsError) throw commentsError;
+      setComments(commentsData || []);
 
-      // Fetch profiles for comment authors
-      if (data && data.length > 0) {
-        const userIds = [...new Set(data.map(c => c.user_id))];
-        fetchProfiles(userIds);
+      // Fetch individual votes
+      const { data: votesData, error: votesError } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('proposal_id', proposalId);
+
+      if (votesError) throw votesError;
+      setVotes((votesData || []).map(v => ({
+        ...v,
+        vote_type: v.vote_type as 'yes' | 'no' | 'abstain'
+      })));
+
+      // Fetch profiles for comment authors and voters
+      const allUserIds = [
+        ...new Set([
+          ...(commentsData || []).map(c => c.user_id),
+          ...(votesData || []).map(v => v.user_id)
+        ])
+      ];
+      if (allUserIds.length > 0) {
+        fetchProfiles(allUserIds);
       }
     } catch (error) {
-      console.error('Error fetching comments:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchComments();
+    fetchData();
   }, [proposalId]);
 
   // Real-time subscription for comments
@@ -83,7 +115,7 @@ export default function ProposalDetail() {
           filter: `proposal_id=eq.${proposalId}`
         },
         () => {
-          fetchComments();
+          fetchData();
         }
       )
       .subscribe();
@@ -126,6 +158,7 @@ export default function ProposalDetail() {
       if (error) throw error;
 
       setNewComment("");
+      fetchData(); // Refresh to show new comment
       toast({
         title: "Comment added",
         description: "Your suggestion has been posted",
@@ -171,7 +204,20 @@ export default function ProposalDetail() {
         <TeRentaCard>
           <div className="space-y-4">
             <div className="flex items-start justify-between">
-              <h1 className="text-xl font-bold text-card-foreground">{proposal.title}</h1>
+              <div className="flex-1">
+                <h1 className="text-xl font-bold text-card-foreground">{proposal.title}</h1>
+                {proposal.created_by === user?.id && proposal.status === 'active' && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setIsEditing(true)}
+                    className="mt-2"
+                  >
+                    <Edit2 size={14} className="mr-1" />
+                    Edit Proposal
+                  </Button>
+                )}
+              </div>
               <Badge 
                 variant={
                   proposal.status === 'active' ? 'default' :
@@ -186,6 +232,16 @@ export default function ProposalDetail() {
             
             {proposal.description && (
               <p className="text-text-secondary">{proposal.description}</p>
+            )}
+
+            {proposal.image_url && (
+              <div className="mt-3">
+                <img 
+                  src={proposal.image_url} 
+                  alt="Proposal" 
+                  className="w-full rounded-lg border border-border"
+                />
+              </div>
             )}
 
             {proposal.event_date && (
@@ -221,6 +277,45 @@ export default function ProposalDetail() {
                 <span>Abstain</span>
               </div>
               <span className="font-semibold">{proposal.abstain_votes || 0}</span>
+            </div>
+          </div>
+
+          {/* Individual Votes */}
+          <div className="mt-6 space-y-4">
+            <h3 className="font-medium text-card-foreground">Individual Votes</h3>
+            <div className="space-y-2">
+              {['yes', 'no', 'abstain'].map((voteType) => {
+                const votesByType = votes.filter(v => v.vote_type === voteType);
+                if (votesByType.length === 0) return null;
+                
+                return (
+                  <div key={voteType} className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      {voteType === 'yes' && <ThumbsUp size={14} className="text-green-600" />}
+                      {voteType === 'no' && <ThumbsDown size={14} className="text-red-600" />}
+                      {voteType === 'abstain' && <Minus size={14} className="text-gray-600" />}
+                      <span className="capitalize">{voteType} ({votesByType.length})</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 ml-6">
+                      {votesByType.map((vote) => (
+                        <div key={vote.id} className="flex items-center gap-2 bg-background/50 rounded px-2 py-1">
+                          <Avatar className="w-5 h-5">
+                            <AvatarImage src={`https://kpwiblindzupzbwavump.supabase.co/storage/v1/object/public/avatars/${vote.user_id}/avatar.jpg`} />
+                            <AvatarFallback className="text-xs">
+                              {getDisplayName(vote.user_id).charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs">{getDisplayName(vote.user_id)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {votes.length === 0 && (
+                <p className="text-sm text-text-secondary">No votes yet.</p>
+              )}
             </div>
           </div>
 
@@ -316,6 +411,48 @@ export default function ProposalDetail() {
           </div>
         </TeRentaCard>
       </div>
+
+      {/* Edit Proposal Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Proposal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Title</label>
+              <Input
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                placeholder="Enter proposal title"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                value={editedDescription}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                placeholder="Enter proposal description"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsEditing(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {/* TODO: Save changes */}}
+                className="flex-1"
+              >
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNavigation />
     </div>

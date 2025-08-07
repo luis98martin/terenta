@@ -321,6 +321,7 @@ export type Database = {
           expires_at: string | null
           group_id: string
           id: string
+          image_url: string | null
           status: string
           title: string
           updated_at: string
@@ -333,6 +334,7 @@ export type Database = {
           expires_at?: string | null
           group_id: string
           id?: string
+          image_url?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -345,6 +347,7 @@ export type Database = {
           expires_at?: string | null
           group_id?: string
           id?: string
+          image_url?: string | null
           status?: string
           title?: string
           updated_at?: string

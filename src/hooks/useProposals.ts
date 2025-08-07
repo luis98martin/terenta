@@ -6,6 +6,7 @@ export interface Proposal {
   id: string;
   title: string;
   description?: string;
+  image_url?: string;
   group_id: string;
   created_by: string;
   expires_at?: string;
