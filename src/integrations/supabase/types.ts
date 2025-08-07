@@ -170,7 +170,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
-          invite_code: string | null
+          invite_code: string
           name: string
           updated_at: string
         }
@@ -180,7 +180,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
-          invite_code?: string | null
+          invite_code: string
           name: string
           updated_at?: string
         }
@@ -190,7 +190,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
-          invite_code?: string | null
+          invite_code?: string
           name?: string
           updated_at?: string
         }
