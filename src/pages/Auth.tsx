@@ -7,6 +7,7 @@ import { ArrowLeft, Mail, Lock, User } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Auth() {
   const { mode } = useParams<{ mode: 'login' | 'register' }>();
@@ -19,9 +20,16 @@ export default function Auth() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: '',
+    username: '',
+    firstName: '',
+    lastName: '',
+    birthDate: '',
+    country: '',
     confirmPassword: ''
   });
+
+  const [usernameChecking, setUsernameChecking] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +57,14 @@ export default function Auth() {
           return;
         }
         
-        const { error } = await signUp(formData.email, formData.password, formData.name);
+        const { error } = await signUp(formData.email, formData.password, {
+          username: formData.username,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          birth_date: formData.birthDate,
+          country: formData.country,
+          display_name: `${formData.firstName} ${formData.lastName}`
+        });
         if (error) {
           toast({
             title: "Error creating account",
@@ -77,6 +92,31 @@ export default function Auth() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Check username availability
+    if (field === 'username' && value.length >= 3) {
+      checkUsernameAvailability(value);
+    } else if (field === 'username') {
+      setUsernameAvailable(null);
+    }
+  };
+
+  const checkUsernameAvailability = async (username: string) => {
+    setUsernameChecking(true);
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username)
+        .single();
+      
+      setUsernameAvailable(!data);
+    } catch (error) {
+      // No user found means username is available
+      setUsernameAvailable(true);
+    } finally {
+      setUsernameChecking(false);
+    }
   };
 
   return (
@@ -104,23 +144,116 @@ export default function Auth() {
         <TeRentaCard className="animate-fade-in">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-card-foreground">
-                  Full Name
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="text-card-foreground">
+                    Username
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Choose a unique username"
+                      value={formData.username}
+                      onChange={(e) => handleInputChange('username', e.target.value)}
+                      className="pl-10 h-12 rounded-xl"
+                      required
+                    />
+                    {usernameChecking && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      </div>
+                    )}
+                  </div>
+                  {usernameAvailable === false && (
+                    <p className="text-xs text-red-500">Username is already taken</p>
+                  )}
+                  {usernameAvailable === true && (
+                    <p className="text-xs text-green-500">Username is available</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-card-foreground">
+                      First Name
+                    </Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="First name"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      className="h-12 rounded-xl"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-card-foreground">
+                      Last Name
+                    </Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Last name"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      className="h-12 rounded-xl"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="birthDate" className="text-card-foreground">
+                    Birth Date
+                  </Label>
                   <Input
-                    id="name"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="pl-10 h-12 rounded-xl"
+                    id="birthDate"
+                    type="date"
+                    value={formData.birthDate}
+                    onChange={(e) => handleInputChange('birthDate', e.target.value)}
+                    className="h-12 rounded-xl"
                     required
                   />
                 </div>
-              </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="text-card-foreground">
+                    Country
+                  </Label>
+                  <select
+                    id="country"
+                    value={formData.country}
+                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    className="w-full px-3 py-3 border border-border rounded-xl bg-background"
+                    required
+                  >
+                    <option value="">Select your country</option>
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="UK">United Kingdom</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                    <option value="ES">Spain</option>
+                    <option value="IT">Italy</option>
+                    <option value="AU">Australia</option>
+                    <option value="NZ">New Zealand</option>
+                    <option value="JP">Japan</option>
+                    <option value="KR">South Korea</option>
+                    <option value="CN">China</option>
+                    <option value="IN">India</option>
+                    <option value="BR">Brazil</option>
+                    <option value="MX">Mexico</option>
+                    <option value="AR">Argentina</option>
+                    <option value="ZA">South Africa</option>
+                    <option value="EG">Egypt</option>
+                    <option value="NG">Nigeria</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">

@@ -15,7 +15,7 @@ const navigationItems = [
   },
   { 
     icon: Calendar, 
-    label: "Events", 
+    label: "Calendar", 
     path: "/calendar" 
   },
   { 

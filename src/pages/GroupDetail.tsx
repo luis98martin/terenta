@@ -12,6 +12,7 @@ import { useChats, useMessages } from "@/hooks/useChats";
 import { useProposals } from "@/hooks/useProposals";
 import { useEvents } from "@/hooks/useEvents";
 import { useToast } from "@/hooks/use-toast";
+import { useProfiles } from "@/hooks/useProfiles";
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -20,6 +21,7 @@ export default function GroupDetail() {
   const { proposals, createProposal, vote } = useProposals(groupId);
   const { events } = useEvents(groupId);
   const { toast } = useToast();
+  const { getDisplayName, fetchProfiles } = useProfiles();
 
   const [activeTab, setActiveTab] = useState("chat");
   const [newMessage, setNewMessage] = useState("");
@@ -46,6 +48,14 @@ export default function GroupDetail() {
   }, [chats, group, groupId, createChat]);
 
   const { messages, sendMessage } = useMessages(chatId);
+
+  // Fetch profiles for message authors
+  useEffect(() => {
+    if (messages.length > 0) {
+      const userIds = messages.map(m => m.user_id);
+      fetchProfiles(userIds);
+    }
+  }, [messages, fetchProfiles]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !chatId) return;
@@ -143,7 +153,9 @@ export default function GroupDetail() {
               {messages.map((message) => (
                 <TeRentaCard key={message.id}>
                   <div className="text-sm">
-                    <div className="font-medium text-card-foreground mb-1">{message.user_id}</div>
+                    <div className="font-medium text-card-foreground mb-1">
+                      {getDisplayName(message.user_id)}
+                    </div>
                     <div className="text-text-secondary">{message.content}</div>
                     <div className="text-xs text-text-secondary mt-1">
                       {new Date(message.created_at).toLocaleString()}
@@ -181,6 +193,7 @@ export default function GroupDetail() {
             </Button>
 
             <div className="space-y-3">
+              {/* Show proposals AND events from proposals here */}
               {proposals.map((proposal) => (
                 <TeRentaCard key={proposal.id} variant="interactive">
                   <div className="space-y-3">
@@ -251,7 +264,30 @@ export default function GroupDetail() {
                   </div>
                 </TeRentaCard>
               ))}
-              {proposals.length === 0 && (
+              {/* Show upcoming events from proposals */}
+              {events.map((event) => (
+                <TeRentaCard key={`event-${event.id}`} variant="highlighted">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-card-foreground">📅 {event.title}</h4>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        Event
+                      </span>
+                    </div>
+                    {event.description && (
+                      <p className="text-sm text-text-secondary">{event.description}</p>
+                    )}
+                    <div className="text-sm text-text-secondary">
+                      🗓️ {new Date(event.start_date).toLocaleString()}
+                    </div>
+                    {event.location && (
+                      <div className="text-sm text-text-secondary">📍 {event.location}</div>
+                    )}
+                  </div>
+                </TeRentaCard>
+              ))}
+
+              {proposals.length === 0 && events.length === 0 && (
                 <div className="text-center py-8">
                   <Vote className="w-12 h-12 mx-auto text-text-secondary mb-2" />
                   <p className="text-text-secondary">No proposals yet. Create the first one!</p>
