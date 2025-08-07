@@ -1,4 +1,4 @@
-import { Home, Users, MessageCircle, Calendar, Vote } from "lucide-react";
+import { Home, Users, Calendar, Vote, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -14,11 +14,6 @@ const navigationItems = [
     path: "/groups" 
   },
   { 
-    icon: MessageCircle, 
-    label: "Chat", 
-    path: "/chat" 
-  },
-  { 
     icon: Calendar, 
     label: "Events", 
     path: "/calendar" 
@@ -27,6 +22,11 @@ const navigationItems = [
     icon: Vote, 
     label: "Votes", 
     path: "/proposals" 
+  },
+  { 
+    icon: User, 
+    label: "Profile", 
+    path: "/profile" 
   },
 ];
 
