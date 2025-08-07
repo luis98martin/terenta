@@ -28,20 +28,29 @@ export function useGroups() {
         .from('groups')
         .select(`
           *,
-          group_members!inner(role),
-          group_members(count)
+          group_members!inner(role)
         `)
         .eq('group_members.user_id', user.id);
 
       if (error) throw error;
 
-      const formattedGroups = data?.map(group => ({
-        ...group,
-        member_count: group.group_members?.length || 0,
-        user_role: group.group_members[0]?.role || 'member'
-      })) || [];
+      // Get member count for each group separately
+      const groupsWithCounts = await Promise.all(
+        (data || []).map(async (group) => {
+          const { count } = await supabase
+            .from('group_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('group_id', group.id);
 
-      setGroups(formattedGroups);
+          return {
+            ...group,
+            member_count: count || 0,
+            user_role: group.group_members[0]?.role || 'member'
+          };
+        })
+      );
+
+      setGroups(groupsWithCounts);
     } catch (error) {
       console.error('Error fetching groups:', error);
     } finally {
