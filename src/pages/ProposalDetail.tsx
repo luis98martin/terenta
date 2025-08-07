@@ -35,7 +35,7 @@ interface Vote {
 export default function ProposalDetail() {
   const { groupId, proposalId } = useParams<{ groupId: string; proposalId: string }>();
   const navigate = useNavigate();
-  const { proposals, vote } = useProposals(groupId);
+  const { proposals, vote, refetch } = useProposals(groupId);
   const { toast } = useToast();
   const { getDisplayName, fetchProfiles } = useProfiles();
   const { user } = useAuth();
@@ -47,6 +47,7 @@ export default function ProposalDetail() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedDescription, setEditedDescription] = useState("");
+  const [editedImageUrl, setEditedImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Find the current proposal
@@ -100,21 +101,32 @@ export default function ProposalDetail() {
     fetchData();
   }, [proposalId]);
 
-  // Real-time subscription for comments
+  // Real-time subscription for comments, votes and proposal updates
   useEffect(() => {
     if (!proposalId) return;
 
     const channel = supabase
-      .channel('proposal-comments')
+      .channel(`proposal-${proposalId}-realtime`)
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'proposal_comments',
-          filter: `proposal_id=eq.${proposalId}`
-        },
+        { event: '*', schema: 'public', table: 'proposal_comments', filter: `proposal_id=eq.${proposalId}` },
         () => {
+          fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'votes', filter: `proposal_id=eq.${proposalId}` },
+        () => {
+          fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'proposals', filter: `id=eq.${proposalId}` },
+        () => {
+          // Ensure header, counts, etc. update
+          refetch();
           fetchData();
         }
       )
@@ -123,7 +135,7 @@ export default function ProposalDetail() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [proposalId]);
+  }, [proposalId, refetch]);
 
   const handleVote = async (voteType: 'yes' | 'no' | 'abstain') => {
     if (!proposal) return;
@@ -172,6 +184,45 @@ export default function ProposalDetail() {
     }
   };
 
+  const handleImageUpload = async (file: File) => {
+    try {
+      setUploadingImage(true);
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `${user?.id}/${proposalId}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('proposal-images')
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from('proposal-images').getPublicUrl(path);
+      setEditedImageUrl(data.publicUrl);
+      toast({ title: 'Image uploaded', description: 'Preview updated' });
+    } catch (error: any) {
+      toast({ title: 'Image upload failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    if (!proposal) return;
+    try {
+      const { error } = await supabase
+        .from('proposals')
+        .update({
+          title: editedTitle || proposal.title,
+          description: editedDescription || null,
+          image_url: editedImageUrl,
+        })
+        .eq('id', proposal.id);
+      if (error) throw error;
+      toast({ title: 'Proposal updated', description: 'Changes saved successfully' });
+      setIsEditing(false);
+      refetch();
+    } catch (error: any) {
+      toast({ title: 'Failed to save', description: error.message, variant: 'destructive' });
+    }
+  };
+
   if (!proposal) {
     return (
       <div className="min-h-screen bg-background pb-20">
@@ -204,45 +255,46 @@ export default function ProposalDetail() {
         <TeRentaCard>
           <div className="space-y-4">
             <div className="flex items-start justify-between">
-              <div className="flex-1">
+              <div className="flex items-center gap-3 flex-1">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={proposal.image_url} alt={`Proposal image for ${proposal.title}`} />
+                  <AvatarFallback>{proposal.title.charAt(0)}</AvatarFallback>
+                </Avatar>
                 <h1 className="text-xl font-bold text-card-foreground">{proposal.title}</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant={
+                    proposal.status === 'active' ? 'default' :
+                    proposal.status === 'passed' ? 'secondary' :
+                    proposal.status === 'failed' ? 'destructive' :
+                    'outline'
+                  }
+                >
+                  {proposal.status}
+                </Badge>
                 {proposal.created_by === user?.id && proposal.status === 'active' && (
                   <Button 
                     variant="ghost" 
-                    size="sm" 
-                    onClick={() => setIsEditing(true)}
-                    className="mt-2"
+                    size="sm"
+                    onClick={() => {
+                      setEditedTitle(proposal.title);
+                      setEditedDescription(proposal.description || '');
+                      setEditedImageUrl(proposal.image_url || null);
+                      setIsEditing(true);
+                    }}
                   >
                     <Edit2 size={14} className="mr-1" />
-                    Edit Proposal
+                    Edit
                   </Button>
                 )}
               </div>
-              <Badge 
-                variant={
-                  proposal.status === 'active' ? 'default' :
-                  proposal.status === 'passed' ? 'secondary' :
-                  proposal.status === 'failed' ? 'destructive' :
-                  'outline'
-                }
-              >
-                {proposal.status}
-              </Badge>
             </div>
             
             {proposal.description && (
               <p className="text-text-secondary">{proposal.description}</p>
             )}
 
-            {proposal.image_url && (
-              <div className="mt-3">
-                <img 
-                  src={proposal.image_url} 
-                  alt="Proposal" 
-                  className="w-full rounded-lg border border-border"
-                />
-              </div>
-            )}
 
             {proposal.event_date && (
               <div className="flex items-center gap-2 text-sm text-text-secondary">
@@ -266,7 +318,7 @@ export default function ProposalDetail() {
           </div>
         </TeRentaCard>
 
-        {/* Voting Results - Compact */}
+        {/* Voting (Unified) */}
         <TeRentaCard>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -323,18 +375,13 @@ export default function ProposalDetail() {
                 You voted: {proposal.user_vote} • Tap to change
               </div>
             )}
-          </div>
-        </TeRentaCard>
 
-        {/* Individual Votes */}
-        <TeRentaCard>
-          <div className="space-y-4">
-            <h3 className="font-medium text-card-foreground">Individual Votes</h3>
-            <div className="space-y-2">
+            {/* Individual Votes (condensed) */}
+            <div className="space-y-2 pt-1">
               {(['yes', 'no', 'abstain'] as const).map((voteType) => {
                 const votesByType = votes.filter(v => v.vote_type === voteType);
                 if (votesByType.length === 0) return null;
-                
+
                 return (
                   <div key={voteType} className="space-y-1">
                     <div className="flex items-center gap-2 text-sm font-medium">
@@ -359,7 +406,7 @@ export default function ProposalDetail() {
                   </div>
                 );
               })}
-              
+
               {votes.length === 0 && (
                 <p className="text-sm text-text-secondary">No votes yet.</p>
               )}
@@ -441,6 +488,38 @@ export default function ProposalDetail() {
                 placeholder="Enter proposal description"
               />
             </div>
+            <div>
+              <label className="text-sm font-medium">Image</label>
+              <div className="flex items-center gap-3 mt-2">
+                <Avatar className="w-12 h-12">
+                  <AvatarImage src={editedImageUrl || undefined} alt="Proposal image preview" />
+                  <AvatarFallback>{(editedTitle || proposal?.title || 'P').charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex gap-2">
+                  <label className="inline-flex items-center gap-1 px-3 py-2 rounded border border-border cursor-pointer">
+                    <Upload size={14} />
+                    <span className="text-sm">Upload</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file);
+                      }}
+                    />
+                  </label>
+                  {editedImageUrl && (
+                    <Button variant="outline" size="sm" onClick={() => setEditedImageUrl(null)}>
+                      <X size={14} className="mr-1" /> Remove
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {uploadingImage && (
+                <p className="text-xs text-text-secondary mt-1">Uploading...</p>
+              )}
+            </div>
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
@@ -450,8 +529,9 @@ export default function ProposalDetail() {
                 Cancel
               </Button>
               <Button 
-                onClick={() => {/* TODO: Save changes */}}
+                onClick={handleSaveChanges}
                 className="flex-1"
+                disabled={uploadingImage}
               >
                 Save Changes
               </Button>

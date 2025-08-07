@@ -77,6 +77,33 @@ export function useProposals(groupId?: string) {
     fetchProposals();
   }, [user, groupId]);
 
+  // Realtime updates for proposals and votes
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`proposals-realtime-${groupId || 'all'}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'proposals' },
+        () => {
+          fetchProposals();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'votes' },
+        () => {
+          fetchProposals();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, groupId]);
+
   const createProposal = async (proposalData: {
     title: string;
     description?: string;

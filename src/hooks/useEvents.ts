@@ -78,6 +78,33 @@ export function useEvents(groupId?: string) {
     fetchEvents();
   }, [user, groupId]);
 
+  // Realtime updates for events and attendance
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`events-realtime-${groupId || 'all'}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'events' },
+        () => {
+          fetchEvents();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'event_attendees' },
+        () => {
+          fetchEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, groupId]);
+
   const createEvent = async (eventData: {
     title: string;
     description?: string;

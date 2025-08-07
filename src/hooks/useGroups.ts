@@ -62,6 +62,33 @@ export function useGroups() {
     fetchGroups();
   }, [user]);
 
+  // Realtime updates for groups and membership
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('groups-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'groups' },
+        () => {
+          fetchGroups();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'group_members' },
+        () => {
+          fetchGroups();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const createGroup = async (groupData: {
     name: string;
     description?: string;
