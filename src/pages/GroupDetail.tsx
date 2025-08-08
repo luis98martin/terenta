@@ -259,7 +259,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
               </Link>
             </Button>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Show proposals AND events from proposals here */}
               {proposals.map((proposal) => (
                 <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`}>
@@ -401,7 +401,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
               }
 
               return (
-                <div className="space-y-4">
+                <div className="space-y-8">
                   {combined.map(item => (
                     item.type === 'event' ? (
                       <TeRentaCard key={`event-${item.id}`} variant="interactive">
