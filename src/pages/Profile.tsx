@@ -37,7 +37,7 @@ const menuItems = [
 
 export default function Profile() {
   const { user, signOut } = useAuth();
-  const { getDisplayName } = useProfiles();
+  const { getDisplayName, fetchProfile } = useProfiles();
   const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -79,8 +79,12 @@ export default function Profile() {
       const { data } = supabase.storage.from('avatars').getPublicUrl(path);
       const baseUrl = data.publicUrl;
       await supabase.from('profiles').update({ avatar_url: baseUrl }).eq('user_id', user.id);
-      const bustedUrl = `${baseUrl}?v=${Date.now()}`;
+      const version = Date.now();
+      const bustedUrl = `${baseUrl}?v=${version}`;
       setAvatarUrl(bustedUrl);
+      try { localStorage.setItem('avatar_url', bustedUrl); } catch {}
+      window.dispatchEvent(new CustomEvent('avatar-updated', { detail: { url: baseUrl, version } }));
+      await fetchProfile(user.id);
     } finally {
       setUploading(false);
     }

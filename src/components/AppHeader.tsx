@@ -24,14 +24,31 @@ export function AppHeader({ title, showNotifications = true, showSearch = false,
   ));
   const displayName = user ? getDisplayName(user.id) : 'Profile';
 
+  // Helper to compare URLs ignoring cache-busting query
+  const stripQuery = (url?: string) => (url ? url.split('?')[0] : undefined);
+
+  // Keep header avatar in sync with profiles without dropping cache-busting
   useEffect(() => {
     if (!user) return;
     const latest = profiles[user.id]?.avatar_url;
-    if (latest && latest !== avatarUrl) {
+    if (latest && stripQuery(latest) !== stripQuery(avatarUrl)) {
       setAvatarUrl(latest);
       try { localStorage.setItem('avatar_url', latest); } catch {}
     }
   }, [profiles, user, avatarUrl]);
+
+  // Listen for immediate avatar updates from Profile page
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ url: string; version: number }>;
+      if (!ce.detail) return;
+      const busted = `${ce.detail.url}?v=${ce.detail.version}`;
+      setAvatarUrl(busted);
+      try { localStorage.setItem('avatar_url', busted); } catch {}
+    };
+    window.addEventListener('avatar-updated', handler as EventListener);
+    return () => window.removeEventListener('avatar-updated', handler as EventListener);
+  }, []);
   const initials = (displayName || 'U')
     .split(' ')
     .map((n) => n?.[0] ?? '')
