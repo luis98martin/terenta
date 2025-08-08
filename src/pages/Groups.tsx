@@ -138,7 +138,7 @@ export default function Groups() {
               >
                 <TeRentaCard 
                   variant="interactive" 
-                  className={`animate-slide-up cursor-pointer hover:bg-card/80 transition-colors`}
+                  className={`animate-slide-up`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                     <div className="grid grid-cols-[3rem,1fr] gap-4">
