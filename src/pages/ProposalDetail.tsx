@@ -37,7 +37,7 @@ export default function ProposalDetail() {
   const navigate = useNavigate();
   const { proposals, vote, refetch } = useProposals(groupId);
   const { toast } = useToast();
-  const { getDisplayName, fetchProfiles } = useProfiles();
+  const { profiles, getDisplayName, fetchProfiles } = useProfiles();
   const { user } = useAuth();
 
   const [comments, setComments] = useState<ProposalComment[]>([]);
@@ -371,6 +371,55 @@ export default function ProposalDetail() {
               </div>
             )}
 
+          </div>
+        </TeRentaCard>
+
+        {/* Voters Section */}
+        <TeRentaCard>
+          <div className="space-y-3">
+            <h2 className="text-sm font-medium text-text-secondary">Who voted</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Yes</span>
+                  <span className="text-xs text-text-secondary">{votes.filter(v => v.vote_type === 'yes').length}</span>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {votes.filter(v => v.vote_type === 'yes').map(v => (
+                    <div key={v.id} className="flex items-center gap-2">
+                      <Avatar className="w-7 h-7">
+                        <AvatarImage src={profiles[v.user_id]?.avatar_url || undefined} alt={`Avatar of ${getDisplayName(v.user_id)}`} />
+                        <AvatarFallback>{getDisplayName(v.user_id)?.charAt(0) || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">{getDisplayName(v.user_id)}</span>
+                    </div>
+                  ))}
+                  {votes.filter(v => v.vote_type === 'yes').length === 0 && (
+                    <span className="text-xs text-text-secondary">No yes votes yet</span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">No</span>
+                  <span className="text-xs text-text-secondary">{votes.filter(v => v.vote_type === 'no').length}</span>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {votes.filter(v => v.vote_type === 'no').map(v => (
+                    <div key={v.id} className="flex items-center gap-2">
+                      <Avatar className="w-7 h-7">
+                        <AvatarImage src={profiles[v.user_id]?.avatar_url || undefined} alt={`Avatar of ${getDisplayName(v.user_id)}`} />
+                        <AvatarFallback>{getDisplayName(v.user_id)?.charAt(0) || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">{getDisplayName(v.user_id)}</span>
+                    </div>
+                  ))}
+                  {votes.filter(v => v.vote_type === 'no').length === 0 && (
+                    <span className="text-xs text-text-secondary">No no votes yet</span>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </TeRentaCard>
 
