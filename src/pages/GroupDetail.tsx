@@ -61,9 +61,12 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
     }
   }, [chats, group, groupId, createChat]);
 
-  const { messages, sendMessage, refetch: refetchMessages } = useMessages(chatId);
+  const { messages, sendMessage, refetch: refetchMessages, loadMore, hasMore, loadingMore } = useMessages(chatId);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const prevScrollHeightRef = useRef(0);
+  const pendingRestoreRef = useRef(false);
+  const userIsAtBottomRef = useRef(true);
 
   // Fetch profiles for message authors
   useEffect(() => {
@@ -73,11 +76,35 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
     }
   }, [messages, fetchProfiles]);
 
-  // Always scroll to latest message when messages/tab change
+  // Track scroll position and load older messages when reaching top
+  const handleScroll = async (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    userIsAtBottomRef.current = el.scrollTop + el.clientHeight >= el.scrollHeight - 40;
+    if (el.scrollTop <= 48 && hasMore && !loadingMore) {
+      prevScrollHeightRef.current = el.scrollHeight;
+      pendingRestoreRef.current = true;
+      await loadMore();
+    }
+  };
+
+  // Restore scroll position after prepending older messages
+  useEffect(() => {
+    if (pendingRestoreRef.current && messagesContainerRef.current) {
+      const el = messagesContainerRef.current;
+      const newTop = el.scrollHeight - prevScrollHeightRef.current;
+      el.scrollTop = Math.max(newTop, 0);
+      pendingRestoreRef.current = false;
+    }
+  }, [messages]);
+
+  // Auto-scroll to bottom when at bottom or on initial load/new messages
   useEffect(() => {
     const el = messagesContainerRef.current;
     if (!el) return;
-    el.scrollTop = el.scrollHeight;
+    if (pendingRestoreRef.current) return;
+    if (activeTab === 'chat' && (userIsAtBottomRef.current || messages.length === 0)) {
+      el.scrollTop = el.scrollHeight;
+    }
   }, [messages, activeTab, chatId]);
 
   // Set up real-time subscription for messages
@@ -227,7 +254,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
           <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col">
             <div className="relative h-full">
               <div className="flex flex-col h-full min-h-0">
-                <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2">
+                <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2">
                   {messages.map((message) => {
                     // Render system notifications (thin, yellow highlight)
                     if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
