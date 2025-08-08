@@ -144,11 +144,26 @@ export function useGroups() {
     return group;
   };
 
+  const leaveGroup = async (groupId: string) => {
+    if (!user) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('group_members')
+      .delete()
+      .eq('group_id', groupId)
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+
+    await fetchGroups();
+  };
+
   return {
     groups,
     loading,
     createGroup,
     joinGroup,
+    leaveGroup,
     refetch: fetchGroups
   };
 }

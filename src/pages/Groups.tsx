@@ -11,10 +11,11 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Groups() {
-  const { groups, loading, joinGroup } = useGroups();
+  const { groups, loading, joinGroup, leaveGroup } = useGroups();
   const { toast } = useToast();
   const [inviteCode, setInviteCode] = useState("");
   const [joiningGroup, setJoiningGroup] = useState(false);
+  const [leavingId, setLeavingId] = useState<string | null>(null);
 
   const handleJoinGroup = async () => {
     if (!inviteCode.trim()) {
@@ -42,6 +43,20 @@ export default function Groups() {
       });
     } finally {
       setJoiningGroup(false);
+    }
+  };
+
+  const handleLeaveGroup = async (groupId: string, groupName: string) => {
+    const confirm = window.confirm(`Leave "${groupName}"?`);
+    if (!confirm) return;
+    setLeavingId(groupId);
+    try {
+      await leaveGroup(groupId);
+      toast({ title: 'Left group', description: `You left ${groupName}` });
+    } catch (error: any) {
+      toast({ title: 'Could not leave group', description: error.message || 'Please try again', variant: 'destructive' });
+    } finally {
+      setLeavingId(null);
     }
   };
 
@@ -137,7 +152,15 @@ export default function Groups() {
                           </span>
                           <span>Code: {group.invite_code}</span>
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLeaveGroup(group.id, group.name); }}
+                            disabled={leavingId === group.id}
+                          >
+                            {leavingId === group.id ? 'Leaving...' : 'Leave'}
+                          </Button>
                           <div className="text-accent p-1">
                             <MessageCircle size={16} />
                           </div>
