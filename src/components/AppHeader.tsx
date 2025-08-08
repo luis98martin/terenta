@@ -1,4 +1,4 @@
-import { Bell, Search, ChevronLeft } from "lucide-react";
+import { Bell, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
@@ -44,11 +44,6 @@ export function AppHeader({ title, showNotifications = true, showSearch = false,
         </div>
         
         <div className="flex items-center gap-2">
-          {showSearch && (
-            <Button variant="glass" size="icon-sm" className="text-white/80" aria-label="Search">
-              <Search size={18} />
-            </Button>
-          )}
           <Avatar
             className="h-8 w-8 cursor-pointer ring-1 ring-border/50"
             onClick={() => navigate('/profile')}
