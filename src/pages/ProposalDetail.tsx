@@ -274,16 +274,17 @@ export default function ProposalDetail() {
                 <h1 className="text-xl font-bold text-card-foreground">{proposal.title}</h1>
               </div>
               <div className="flex items-center gap-2">
-                <Badge 
-                  variant={
-                    proposal.status === 'active' ? 'default' :
-                    proposal.status === 'passed' ? 'secondary' :
-                    proposal.status === 'failed' ? 'destructive' :
-                    'outline'
-                  }
-                >
-                  {proposal.status}
-                </Badge>
+                {proposal.status !== 'active' && (
+                  <Badge 
+                    variant={
+                      proposal.status === 'passed' ? 'secondary' :
+                      proposal.status === 'failed' ? 'destructive' :
+                      'outline'
+                    }
+                  >
+                    {proposal.status}
+                  </Badge>
+                )}
                 {proposal.created_by === user?.id && proposal.status === 'active' && (
                   <Button 
                     variant="ghost" 
