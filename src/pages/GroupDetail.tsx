@@ -245,6 +245,8 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                   <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
                 </div>
               )}
+              {/* Spacer to prevent last message from being hidden behind the input */}
+              <div className="h-28" />
             </div>
             <div className="fixed inset-x-0 bottom-24 px-4">
               <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 shadow-md">
