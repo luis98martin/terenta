@@ -65,7 +65,7 @@ export function AppHeader({ title, showNotifications = true, showSearch = false,
             </Button>
           )}
           <img
-            src="/lovable-uploads/a878b72e-05fa-459d-a514-06cf3eca6f6c.png"
+            src="/lovable-uploads/clearlogo.png"
             alt="TeRenta? app icon"
             className="w-7 h-7 rounded scale-110"
             loading="lazy"
