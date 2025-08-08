@@ -3,9 +3,9 @@
 
 @layer utilities {
   .text-brand {
-    color: hsl(var(--brand-red));
+    color: hsl(var(--brand-red, 0 71% 38%)); /* fallback if token missing */
   }
   .text-typewriter {
-    color: hsl(var(--typewriter));
+    color: hsl(var(--typewriter, 0 0% 0%)); /* fallback if token missing */
   }
 }

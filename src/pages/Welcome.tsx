@@ -2,8 +2,7 @@ import { Button } from "@/components/ui/button";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { Users, Calendar, MessageCircle, Vote } from "lucide-react";
 import { Link } from "react-router-dom";
-import TypewriterText from "@/components/TypewriterText";
-const teRentaIcon = "/lovable-uploads/a878b72e-05fa-459d-a514-06cf3eca6f6c.png";
+import Hero from "@/components/Hero";
 
 const features = [
   {
@@ -35,22 +34,7 @@ export default function Welcome() {
       <div className="relative px-4 pt-12 pb-8">
         <div className="max-w-lg mx-auto text-center">
           <div className="mb-8">
-            <div className="flex items-center gap-4 justify-center md:justify-start">
-              <img
-                src={teRentaIcon}
-                alt="Te Renta hand icon"
-                className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-lg"
-              />
-              <div className="flex flex-col items-start text-left">
-                <h1 className="text-4xl md:text-5xl font-bold mb-2 text-[hsl(var(--brand-red,0_71%_38%))] leading-tight" aria-level={1}>
-                  Te Renta
-                </h1>
-                <TypewriterText
-                  words={["Comida", "Cine", "Golf", "Copas", "Viaje", "Fiesta", "Padel", "Cerves", "Cena"]}
-                  className="text-2xl md:text-3xl text-[hsl(var(--typewriter,0_0%_0%))]"
-                />
-              </div>
-            </div>
+            <Hero />
           </div>
           
           <p className="text-lg text-foreground/80 mb-8 leading-relaxed">
