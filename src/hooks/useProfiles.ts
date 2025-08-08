@@ -28,9 +28,9 @@ export function useProfiles() {
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, user_id, display_name, username, first_name, last_name, avatar_url, created_at, updated_at')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -53,7 +53,7 @@ export function useProfiles() {
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, user_id, display_name, username, first_name, last_name, avatar_url, created_at, updated_at')
         .in('user_id', missingIds);
 
       if (error) throw error;

@@ -119,29 +119,13 @@ export function useGroups() {
   const joinGroup = async (inviteCode: string) => {
     if (!user) throw new Error('User not authenticated');
 
-    // Find group by invite code
-    const { data: group, error: groupError } = await supabase
-      .from('groups')
-      .select('id')
-      .eq('invite_code', inviteCode)
-      .maybeSingle();
+    const code = inviteCode.trim().toUpperCase();
+    const { data: groupId, error } = await supabase.rpc('join_group', { invite_code: code });
 
-    if (groupError) throw groupError;
-    if (!group) throw new Error('Group not found');
-
-    // Add user as member
-    const { error: memberError } = await supabase
-      .from('group_members')
-      .insert({
-        group_id: group.id,
-        user_id: user.id,
-        role: 'member'
-      });
-
-    if (memberError) throw memberError;
+    if (error) throw error;
 
     await fetchGroups();
-    return group;
+    return { id: groupId as string };
   };
 
   const leaveGroup = async (groupId: string) => {
