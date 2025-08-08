@@ -1,7 +1,7 @@
 import React from "react";
 import TypewriterText from "@/components/TypewriterText";
 
-const heroImage = "/lovable-uploads/fb78e51f-a864-4913-9b0d-371fbdc60087.png";
+const heroImage = "/lovable-uploads/87056922-0d10-4a21-b800-6c0afc9337ce.png";
 
 const words = [
   "Comida?",
@@ -33,7 +33,7 @@ const Hero: React.FC = () => {
       </div>
       <img
         src={heroImage}
-        alt="Shaka hand icon for Te Renta hero"
+        alt="Te Renta app logo"
         className="w-28 h-28 md:w-32 md:h-32 object-contain drop-shadow-lg"
         loading="eager"
       />
