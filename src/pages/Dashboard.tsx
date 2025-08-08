@@ -3,7 +3,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Users, Calendar, MessageCircle } from "lucide-react";
+import { Plus, Users, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useGroups } from "@/hooks/useGroups";
 import { useEvents } from "@/hooks/useEvents";
@@ -20,11 +20,6 @@ export default function Dashboard() {
   const eventsCount = events?.length || 0;
   const chatsCount = chats?.length || 0;
 
-  const quickStats = [
-    { icon: Users, label: "Groups", value: groupsCount.toString(), color: "text-accent" },
-    { icon: Calendar, label: "Events", value: eventsCount.toString(), color: "text-accent" },
-    { icon: MessageCircle, label: "Messages", value: chatsCount.toString(), color: "text-accent" },
-  ] as const;
 
   // Get recent groups (limit to 3)
   const recentGroups = groups?.slice(0, 3) || [];
@@ -68,29 +63,6 @@ export default function Dashboard() {
           </div>
         </TeRentaCard>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3">
-          {quickStats.map((stat, index) => (
-            <Link
-              key={stat.label}
-              to={stat.label === 'Groups' ? '/groups' : stat.label === 'Events' ? '/calendar' : '/chat'}
-              className="block"
-            >
-              <TeRentaCard 
-                className={`text-center animate-slide-up`}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <stat.icon className={`w-6 h-6 mx-auto mb-2 ${stat.color}`} />
-                <div className="text-2xl font-bold text-card-foreground">
-                  {stat.value}
-                </div>
-                <div className="text-xs text-text-secondary">
-                  {stat.label}
-                </div>
-              </TeRentaCard>
-            </Link>
-          ))}
-        </div>
 
         {/* Recent Groups */}
         <div className="space-y-3">
