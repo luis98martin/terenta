@@ -48,7 +48,7 @@ export default function CreateGroup() {
         const { error: uploadError } = await supabase
           .storage
           .from('group-images')
-          .upload(path, formData.photo, { upsert: true });
+          .upload(path, formData.photo, { upsert: true, contentType: formData.photo.type, cacheControl: '3600' });
         if (uploadError) {
           toast({
             title: "Image upload failed",

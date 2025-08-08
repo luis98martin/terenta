@@ -6,6 +6,7 @@ import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { MessageCircle, Vote, Calendar, Users, Send, Plus, ThumbsUp, ThumbsDown, Minus, Check, X } from "lucide-react";
 import { useGroups } from "@/hooks/useGroups";
 import { useChats, useMessages } from "@/hooks/useChats";
@@ -29,8 +30,17 @@ export default function GroupDetail() {
 
   const [activeTab, setActiveTab] = useState("chat");
   const [newMessage, setNewMessage] = useState("");
-  const [chatId, setChatId] = useState<string | null>(null);
+const [chatId, setChatId] = useState<string | null>(null);
 
+// Group proposals by user answer and sort by event date
+const proposalsSorted = [...proposals].sort((a, b) => {
+  const aTime = new Date(a.event_date || a.created_at).getTime();
+  const bTime = new Date(b.event_date || b.created_at).getTime();
+  return aTime - bTime;
+});
+const notAnswered = proposalsSorted.filter(p => !p.user_vote);
+const accepted = proposalsSorted.filter(p => p.user_vote === 'yes');
+const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
   // Find the current group
   const group = groups.find(g => g.id === groupId);
 
@@ -187,7 +197,7 @@ export default function GroupDetail() {
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="space-y-4">
-            <div className="space-y-3 max-h-96 overflow-y-auto px-2">
+            <div className="space-y-3 overflow-y-auto px-2 pb-24">
               {messages.map((message) => {
                 const isOwnMessage = message.user_id === user?.id;
                 return (
@@ -224,16 +234,19 @@ export default function GroupDetail() {
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              />
-              <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                <Send size={16} />
-              </Button>
+            <div className="fixed inset-x-0 bottom-16 px-4">
+              <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 shadow-md">
+                <Input
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  className="flex-1"
+                />
+                <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
+                  <Send size={16} />
+                </Button>
+              </div>
             </div>
           </TabsContent>
 
