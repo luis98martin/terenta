@@ -9,6 +9,7 @@ export interface Event {
   start_date: string;
   end_date?: string;
   location?: string;
+  image_url?: string;
   group_id?: string;
   created_by: string;
   created_at: string;
@@ -113,6 +114,7 @@ export function useEvents(groupId?: string) {
     start_date: string;
     end_date?: string;
     location?: string;
+    image_url?: string;
     group_id?: string;
   }) => {
     if (!user) throw new Error('User not authenticated');

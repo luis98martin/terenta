@@ -161,8 +161,8 @@ export default function Dashboard() {
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="w-12 h-12">
-                      <AvatarImage src={event.group_image_url || undefined} alt={`${event.group_name || 'Event'} image`} />
-                      <AvatarFallback>{(event.group_name || 'E').charAt(0)}</AvatarFallback>
+                      <AvatarImage src={(event.image_url || event.group_image_url) || undefined} alt={`${event.title} image`} />
+                      <AvatarFallback>{(event.title || 'E').charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <h4 className="font-medium text-card-foreground">

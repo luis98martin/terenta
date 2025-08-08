@@ -77,6 +77,16 @@ export default function Calendar() {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="space-y-3">
+                    {proposal.image_url && (
+                      <div className="overflow-hidden rounded-md">
+                        <img
+                          src={proposal.image_url}
+                          alt={`${proposal.title} image`}
+                          loading="lazy"
+                          className="w-full h-36 object-cover"
+                        />
+                      </div>
+                    )}
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold text-card-foreground mb-1">
