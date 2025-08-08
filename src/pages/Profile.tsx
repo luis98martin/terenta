@@ -77,9 +77,10 @@ export default function Profile() {
         .upload(path, file, { upsert: true, contentType: file.type });
       if (uploadError) throw uploadError;
       const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-      const newUrl = data.publicUrl;
-      await supabase.from('profiles').update({ avatar_url: newUrl }).eq('user_id', user.id);
-      setAvatarUrl(newUrl);
+      const baseUrl = data.publicUrl;
+      await supabase.from('profiles').update({ avatar_url: baseUrl }).eq('user_id', user.id);
+      const bustedUrl = `${baseUrl}?v=${Date.now()}`;
+      setAvatarUrl(bustedUrl);
     } finally {
       setUploading(false);
     }
@@ -183,7 +184,7 @@ export default function Profile() {
 
       {/* Edit Profile Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md no-hover-anim">
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
           </DialogHeader>
@@ -208,10 +209,10 @@ export default function Profile() {
               </label>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setIsEditing(false)}>
+              <Button variant="outline" className="flex-1 transition-none active:!scale-100" onClick={() => setIsEditing(false)}>
                 Close
               </Button>
-              <Button className="flex-1" onClick={() => setIsEditing(false)} disabled={uploading}>
+              <Button className="flex-1 transition-none active:!scale-100" onClick={() => setIsEditing(false)} disabled={uploading}>
                 Done
               </Button>
             </div>
