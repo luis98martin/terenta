@@ -9,6 +9,7 @@ import { useGroups } from "@/hooks/useGroups";
 import { useEvents } from "@/hooks/useEvents";
 import { useChats } from "@/hooks/useChats";
 import { format } from "date-fns";
+import Hero from "@/components/Hero";
 
 export default function Dashboard() {
   const { groups, loading: groupsLoading } = useGroups();
@@ -32,15 +33,10 @@ export default function Dashboard() {
       <AppHeader title="TeRenta?" />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
-        {/* Welcome Section */}
-        <div className="text-center animate-fade-in">
-          <h2 className="text-2xl font-semibold text-foreground mb-2">
-            Welcome back! 👋
-          </h2>
-          <p className="text-foreground/70">
-            Ready to plan something amazing?
-          </p>
-        </div>
+        {/* Hero Section */}
+        <section className="animate-fade-in">
+          <Hero />
+        </section>
 
 
 

@@ -11,9 +11,9 @@ interface TypewriterTextProps {
 // A11y: cursor is decorative; we render it with aria-hidden
 export const TypewriterText: React.FC<TypewriterTextProps> = ({
   words,
-  typingSpeed = 70,
-  deleteSpeed = 40,
-  pauseMs = 800,
+  typingSpeed = 120,
+  deleteSpeed = 80,
+  pauseMs = 1200,
   className,
 }) => {
   const [index, setIndex] = useState(0);
@@ -61,9 +61,13 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   }, [longestWord]);
 
   return (
-    <span className={`inline-flex items-baseline ${className || ""}`}>
-      {/* Hidden measurer */}
-      <span ref={measureRef} className="sr-only" aria-hidden>
+    <span className={`relative inline-flex items-baseline ${className || ""}`}>
+      {/* Off-screen measurer to prevent layout shift */}
+      <span
+        ref={measureRef}
+        className={`${className || ""} absolute invisible -z-10 whitespace-nowrap`}
+        aria-hidden
+      >
         {longestWord}
       </span>
 
