@@ -85,7 +85,7 @@ export default function CreateProposal() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Create Proposal" />
+      <AppHeader title="Create Proposal" showBack />
       
       <div className="px-4 py-6 max-w-lg mx-auto">
         <TeRentaCard>

@@ -242,7 +242,7 @@ export default function ProposalDetail() {
   if (!proposal) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <AppHeader title="Proposal Not Found" />
+        <AppHeader title="Proposal Not Found" showBack />
         <div className="px-4 py-6 max-w-lg mx-auto">
           <TeRentaCard>
             <div className="text-center">
@@ -259,7 +259,7 @@ export default function ProposalDetail() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="TeRenta?" />
+      <AppHeader title="TeRenta?" showBack />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
         {/* Proposal Header */}

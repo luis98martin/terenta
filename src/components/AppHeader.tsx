@@ -16,7 +16,7 @@ export function AppHeader({ title, showNotifications = true, showSearch = false,
       <div className="flex items-center justify-between max-w-lg mx-auto">
         <div className="flex items-center gap-3">
           {showBack && (
-            <Button variant="glass" size="icon-sm" className="text-white/80" onClick={() => navigate(-1)} aria-label="Go back">
+            <Button variant="mustard" size="icon-sm" onClick={() => navigate(-1)} aria-label="Go back">
               <ChevronLeft size={18} />
             </Button>
           )}
