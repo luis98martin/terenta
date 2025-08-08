@@ -6,6 +6,7 @@ interface TypewriterTextProps {
   deleteSpeed?: number; // ms per char
   pauseMs?: number; // ms pause after finishing a word
   className?: string;
+  showCursor?: boolean;
 }
 
 // A11y: cursor is decorative; we render it with aria-hidden
@@ -15,6 +16,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   deleteSpeed = 80,
   pauseMs = 1200,
   className,
+  showCursor = true,
 }) => {
   const [index, setIndex] = useState(0);
   const [text, setText] = useState("");
@@ -74,9 +76,11 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
       <span style={{ minWidth }} className="whitespace-nowrap">
         {text}
       </span>
-      <span aria-hidden className="ml-1 select-none" style={{ opacity: cursorVisible ? 1 : 0 }}>
-        |
-      </span>
+      {showCursor && (
+        <span aria-hidden className="ml-1 select-none" style={{ opacity: cursorVisible ? 1 : 0 }}>
+          |
+        </span>
+      )}
     </span>
   );
 };

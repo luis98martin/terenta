@@ -21,6 +21,7 @@ export default {
 			fontFamily: {
         marker: ['"Permanent Marker"', 'cursive'],
         montserrat: ['Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        patrick: ['"Patrick Hand"', 'cursive'],
       },
 			colors: {
 				border: 'hsl(var(--border))',
