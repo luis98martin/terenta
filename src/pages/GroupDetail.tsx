@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -63,6 +63,8 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
 
   const { messages, sendMessage, refetch: refetchMessages } = useMessages(chatId);
 
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
   // Fetch profiles for message authors
   useEffect(() => {
     if (messages.length > 0) {
@@ -70,6 +72,13 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
       fetchProfiles(userIds);
     }
   }, [messages, fetchProfiles]);
+
+  // Always scroll to latest message when messages/tab change
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [messages, activeTab, chatId]);
 
   // Set up real-time subscription for messages
   useEffect(() => {
@@ -147,10 +156,10 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className={`h-[100dvh] bg-background flex flex-col ${activeTab === 'chat' ? 'overflow-hidden' : ''}`}>
       <AppHeader title="TeRenta?" showBack backTo="/groups" />
       
-      <div className="px-4 py-6 max-w-lg mx-auto">
+      <div className="flex-1 min-h-0 overflow-hidden px-4 py-6 max-w-lg mx-auto pb-24">
         {/* Group Info */}
         <TeRentaCard className="mb-6">
             <div className="flex items-center gap-3 mb-3">
@@ -179,7 +188,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
         </TeRentaCard>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageCircle size={16} />
@@ -196,10 +205,10 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
           </TabsList>
 
           {/* Chat Tab */}
-          <TabsContent value="chat" className="space-y-4">
-            <div className="relative">
-              <div className="flex flex-col h-[65vh] sm:h-[70vh]">
-                <div className="flex-1 overflow-y-auto space-y-3 px-2">
+          <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col">
+            <div className="relative h-full">
+              <div className="flex flex-col h-full min-h-0">
+                <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2">
                   {messages.map((message) => {
                     // Render system notifications (thin, yellow highlight)
                     if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
