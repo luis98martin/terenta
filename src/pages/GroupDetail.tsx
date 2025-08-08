@@ -205,7 +205,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
     <div className={`h-[100dvh] bg-background flex flex-col ${activeTab === 'chat' ? 'overflow-hidden' : ''}`}>
       <AppHeader title="TeRenta?" showBack backTo="/groups" />
       
-      <div className="flex-1 min-h-0 overflow-hidden px-4 py-6 max-w-lg mx-auto">
+      <div className="flex-1 min-h-0 overflow-hidden px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+88px)] sm:pb-[88px] max-w-lg mx-auto">
         {/* Group Info */}
         <TeRentaCard className="mb-6">
             <div className="flex items-center gap-3 mb-3">
