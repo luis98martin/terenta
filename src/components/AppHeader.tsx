@@ -1,6 +1,9 @@
 import { Bell, Search, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfiles } from "@/hooks/useProfiles";
 
 interface AppHeaderProps {
   title: string;
@@ -12,6 +15,16 @@ interface AppHeaderProps {
 
 export function AppHeader({ title, showNotifications = true, showSearch = false, showBack = false, backTo }: AppHeaderProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { profiles, getDisplayName } = useProfiles();
+  const avatarUrl = user ? profiles[user.id]?.avatar_url ?? undefined : undefined;
+  const displayName = user ? getDisplayName(user.id) : 'Profile';
+  const initials = (displayName || 'U')
+    .split(' ')
+    .map((n) => n?.[0] ?? '')
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'U';
   return (
     <header className="bg-primary backdrop-blur-sm border-b border-border/30 px-4 py-4 sticky top-0 z-40">
       <div className="flex items-center justify-between max-w-lg mx-auto">
@@ -32,11 +45,22 @@ export function AppHeader({ title, showNotifications = true, showSearch = false,
         
         <div className="flex items-center gap-2">
           {showSearch && (
-            <Button variant="glass" size="icon-sm" className="text-white/80">
+            <Button variant="glass" size="icon-sm" className="text-white/80" aria-label="Search">
               <Search size={18} />
             </Button>
           )}
-          
+          <Avatar
+            className="h-8 w-8 cursor-pointer ring-1 ring-border/50"
+            onClick={() => navigate('/profile')}
+            role="button"
+            aria-label="Open profile"
+          >
+            {avatarUrl ? (
+              <AvatarImage src={avatarUrl} alt={`${displayName} avatar`} loading="lazy" />
+            ) : (
+              <AvatarFallback className="text-foreground/80">{initials}</AvatarFallback>
+            )}
+          </Avatar>
         </div>
       </div>
     </header>
