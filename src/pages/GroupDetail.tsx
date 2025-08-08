@@ -205,7 +205,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
     <div className={`h-[100dvh] bg-background flex flex-col ${activeTab === 'chat' ? 'overflow-hidden' : ''}`}>
       <AppHeader title="TeRenta?" showBack backTo="/groups" />
       
-      <div className="flex-1 min-h-0 overflow-hidden px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+88px)] sm:pb-[88px] max-w-lg mx-auto">
+      <div className="flex-1 min-h-0 overflow-hidden px-4 py-4 max-w-lg mx-auto">
         {/* Group Info */}
         <TeRentaCard className="mb-6">
             <div className="flex items-center gap-3 mb-3">
@@ -254,7 +254,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
           <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col">
             <div className="relative h-full">
               <div className="flex flex-col h-full min-h-0">
-                <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2 pr-1 pb-28 chat-scroll">
+                <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2 pr-1 pb-16 chat-scroll">
                   {messages.map((message) => {
                     // Render system notifications (thin, yellow highlight)
                     if (message.message_type === 'text' && message.content.includes('is alive!')) {
@@ -303,7 +303,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                     </div>
                   )}
                 </div>
-                <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+72px)] sm:bottom-[72px] z-[60] px-2 pt-2 bg-gradient-to-t from-background via-background/80 to-transparent">
+                <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+64px)] sm:bottom-[64px] z-[60] px-2 pt-2 bg-gradient-to-t from-background via-background/80 to-transparent">
                   <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background p-2 shadow-md">
                     <Input
                       placeholder="Type a message..."
