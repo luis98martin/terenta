@@ -162,7 +162,7 @@ export function useProposals(groupId?: string) {
           .maybeSingle();
 
         const display = profile?.display_name || profile?.username || 'Someone';
-        const content = `@${display} has something for the group!`;
+        const content = `${display} has something for the group!`;
 
         await supabase.from('messages').insert({
           chat_id: chatId,

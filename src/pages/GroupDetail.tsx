@@ -200,11 +200,12 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
             <div className="space-y-3 overflow-y-auto px-2 pb-36">
               {messages.map((message) => {
                 // Render system notifications (thin, yellow highlight)
-                if (message.message_type === 'text' && message.content.startsWith('@') && message.content.endsWith('has something for the group!')) {
+                if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
                   return (
                     <div key={message.id} className="flex justify-center">
-                      <div className="w-full text-center text-xs px-3 py-1 rounded-md border bg-accent/15 text-accent border-accent/30">
-                        {message.content}
+                      <div className="w-full text-center text-xs px-3 py-1 rounded-md border bg-accent/15 text-foreground border-accent/30 inline-flex items-center gap-2 justify-center">
+                        <img src="/favicon.ico" alt="App logo" className="w-4 h-4 rounded-full" />
+                        <span className="truncate">{message.content}</span>
                       </div>
                     </div>
                   );
