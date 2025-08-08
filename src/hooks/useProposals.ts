@@ -124,6 +124,57 @@ export function useProposals(groupId?: string) {
 
     if (error) throw error;
 
+    // Post a system notification message to the group's chat
+    try {
+      const groupIdForChat = proposalData.group_id;
+      let chatId: string | null = null;
+
+      // Find existing group chat
+      const { data: existingChat } = await supabase
+        .from('chats')
+        .select('id')
+        .eq('group_id', groupIdForChat)
+        .eq('type', 'group')
+        .maybeSingle();
+
+      if (existingChat?.id) {
+        chatId = existingChat.id;
+      } else {
+        // Create chat if it doesn't exist
+        const { data: newChat } = await supabase
+          .from('chats')
+          .insert({
+            created_by: user.id,
+            group_id: groupIdForChat,
+            type: 'group'
+          })
+          .select('id')
+          .single();
+        chatId = newChat?.id || null;
+      }
+
+      if (chatId) {
+        // Fetch creator's display name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name, username')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        const display = profile?.display_name || profile?.username || 'Someone';
+        const content = `@${display} has something for the group!`;
+
+        await supabase.from('messages').insert({
+          chat_id: chatId,
+          user_id: user.id,
+          content,
+          message_type: 'text'
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to post proposal notification message:', e);
+    }
+
     await fetchProposals();
     return data;
   };

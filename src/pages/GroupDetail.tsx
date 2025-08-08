@@ -199,6 +199,17 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
           <TabsContent value="chat" className="space-y-4">
             <div className="space-y-3 overflow-y-auto px-2 pb-36">
               {messages.map((message) => {
+                // Render system notifications (thin, yellow highlight)
+                if (message.message_type === 'text' && message.content.startsWith('@') && message.content.endsWith('has something for the group!')) {
+                  return (
+                    <div key={message.id} className="flex justify-center">
+                      <div className="w-full text-center text-xs px-3 py-1 rounded-md border bg-accent/15 text-accent border-accent/30">
+                        {message.content}
+                      </div>
+                    </div>
+                  );
+                }
+
                 const isOwnMessage = message.user_id === user?.id;
                 return (
                   <div 
