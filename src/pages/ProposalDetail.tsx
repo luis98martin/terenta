@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ThumbsUp, ThumbsDown, Minus, MessageSquare, Calendar, ArrowLeft, Send, Edit2, Upload, X } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageSquare, Calendar, ArrowLeft, Send, Edit2, Upload, X } from "lucide-react";
 import { useProposals } from "@/hooks/useProposals";
 import { useToast } from "@/hooks/use-toast";
 import { useProfiles } from "@/hooks/useProfiles";
@@ -137,7 +137,7 @@ export default function ProposalDetail() {
     };
   }, [proposalId, refetch]);
 
-  const handleVote = async (voteType: 'yes' | 'no' | 'abstain') => {
+  const handleVote = async (voteType: 'yes' | 'no') => {
     if (!proposal) return;
 
     try {
@@ -343,20 +343,6 @@ export default function ProposalDetail() {
               <span className="text-xs text-text-secondary">Total: {proposal.total_votes || 0}</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-700 dark:text-green-300 text-xs">
-                <ThumbsUp size={12} />
-                <span>{proposal.yes_votes || 0}</span>
-              </div>
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/10 text-red-700 dark:text-red-300 text-xs">
-                <ThumbsDown size={12} />
-                <span>{proposal.no_votes || 0}</span>
-              </div>
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-text-secondary text-xs">
-                <Minus size={12} />
-                <span>{proposal.abstain_votes || 0}</span>
-              </div>
-            </div>
 
             {proposal.status === 'active' && (
               <div className="flex gap-2">
@@ -376,14 +362,6 @@ export default function ProposalDetail() {
                 >
                   <ThumbsDown size={14} className="mr-1" /> No ({proposal.no_votes || 0})
                 </Button>
-                <Button
-                  variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => handleVote('abstain')}
-                  className="flex-1"
-                >
-                  <Minus size={14} className="mr-1" /> Abstain ({proposal.abstain_votes || 0})
-                </Button>
               </div>
             )}
 
@@ -393,41 +371,6 @@ export default function ProposalDetail() {
               </div>
             )}
 
-            {/* Individual Votes (condensed) */}
-            <div className="space-y-2 pt-1">
-              {(['yes', 'no', 'abstain'] as const).map((voteType) => {
-                const votesByType = votes.filter(v => v.vote_type === voteType);
-                if (votesByType.length === 0) return null;
-
-                return (
-                  <div key={voteType} className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      {voteType === 'yes' && <ThumbsUp size={14} className="text-green-600" />}
-                      {voteType === 'no' && <ThumbsDown size={14} className="text-red-600" />}
-                      {voteType === 'abstain' && <Minus size={14} className="text-gray-600" />}
-                      <span className="capitalize">{voteType} ({votesByType.length})</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 ml-6">
-                      {votesByType.map((vote) => (
-                        <div key={vote.id} className="flex items-center gap-2 bg-background/50 rounded px-2 py-1">
-                          <Avatar className="w-5 h-5">
-                            <AvatarImage src={`https://kpwiblindzupzbwavump.supabase.co/storage/v1/object/public/avatars/${vote.user_id}/avatar.jpg`} />
-                            <AvatarFallback className="text-xs">
-                              {getDisplayName(vote.user_id).charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs">{getDisplayName(vote.user_id)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {votes.length === 0 && (
-                <p className="text-sm text-text-secondary">No votes yet.</p>
-              )}
-            </div>
           </div>
         </TeRentaCard>
 

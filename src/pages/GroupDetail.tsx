@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { MessageCircle, Vote, Calendar, Users, Send, Plus, ThumbsUp, ThumbsDown, Minus, Check, X } from "lucide-react";
+import { MessageCircle, Vote, Calendar, Users, Send, Plus, ThumbsUp, ThumbsDown, Check, X } from "lucide-react";
 import { useGroups } from "@/hooks/useGroups";
 import { useChats, useMessages } from "@/hooks/useChats";
 import { useProposals } from "@/hooks/useProposals";
@@ -112,7 +112,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
     }
   };
 
-  const handleVote = async (proposalId: string, voteType: 'yes' | 'no' | 'abstain') => {
+  const handleVote = async (proposalId: string, voteType: 'yes' | 'no') => {
     try {
       await vote(proposalId, voteType);
       toast({
@@ -291,14 +291,6 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                           )}
                         </div>
 
-                        {/* Voting Results */}
-                        <div className="text-sm">
-                          <div className="flex justify-between mb-1">
-                            <span className="text-green-600">Yes: {proposal.yes_votes || 0}</span>
-                            <span className="text-red-600">No: {proposal.no_votes || 0}</span>
-                            <span className="text-gray-600">Abstain: {proposal.abstain_votes || 0}</span>
-                          </div>
-                        </div>
 
                         {/* Voting Buttons */}
                         {proposal.status === 'active' && (
@@ -320,15 +312,6 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                             >
                               <ThumbsDown size={14} className="mr-1" />
                               No ({proposal.no_votes || 0})
-                            </Button>
-                            <Button
-                              variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
-                              size="sm"
-                              onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'abstain'); }}
-                              className="flex-1"
-                            >
-                              <Minus size={14} className="mr-1" />
-                              Abstain ({proposal.abstain_votes || 0})
                             </Button>
                           </div>
                         )}

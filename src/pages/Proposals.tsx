@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ThumbsUp, ThumbsDown, Minus, Plus, Users, Clock } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Plus, Users, Clock } from "lucide-react";
 import { useProposals } from "@/hooks/useProposals";
 import { useGroups } from "@/hooks/useGroups";
 import { useToast } from "@/hooks/use-toast";
@@ -72,7 +72,7 @@ export default function Proposals() {
     }
   };
 
-  const handleVote = async (proposalId: string, voteType: 'yes' | 'no' | 'abstain') => {
+  const handleVote = async (proposalId: string, voteType: 'yes' | 'no') => {
     try {
       await vote(proposalId, voteType);
       toast({
@@ -88,10 +88,6 @@ export default function Proposals() {
     }
   };
 
-  const getVotePercentage = (votes: number, total: number) => {
-    if (total === 0) return 0;
-    return Math.round((votes / total) * 100);
-  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -261,60 +257,6 @@ export default function Proposals() {
                     </div>
                   </div>
                   
-                  {/* Voting Results */}
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-card-foreground">
-                      Voting Results ({proposal.total_votes || 0} votes)
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-1 text-green-600">
-                          <ThumbsUp size={12} />
-                          Yes: {proposal.yes_votes || 0}
-                        </span>
-                        <span>{getVotePercentage(proposal.yes_votes || 0, proposal.total_votes || 0)}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-green-500 h-2 rounded-full transition-all" 
-                          style={{ width: `${getVotePercentage(proposal.yes_votes || 0, proposal.total_votes || 0)}%` }}
-                        ></div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-1 text-red-600">
-                          <ThumbsDown size={12} />
-                          No: {proposal.no_votes || 0}
-                        </span>
-                        <span>{getVotePercentage(proposal.no_votes || 0, proposal.total_votes || 0)}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-red-500 h-2 rounded-full transition-all" 
-                          style={{ width: `${getVotePercentage(proposal.no_votes || 0, proposal.total_votes || 0)}%` }}
-                        ></div>
-                      </div>
-                      
-                      {(proposal.abstain_votes || 0) > 0 && (
-                        <>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="flex items-center gap-1 text-gray-600">
-                              <Minus size={12} />
-                              Abstain: {proposal.abstain_votes || 0}
-                            </span>
-                            <span>{getVotePercentage(proposal.abstain_votes || 0, proposal.total_votes || 0)}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-gray-500 h-2 rounded-full transition-all" 
-                              style={{ width: `${getVotePercentage(proposal.abstain_votes || 0, proposal.total_votes || 0)}%` }}
-                            ></div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
                   
                   {/* Voting Buttons */}
                   {proposal.status === 'active' && (
@@ -336,15 +278,6 @@ export default function Proposals() {
                       >
                         <ThumbsDown size={14} className="mr-1" />
                         No ({proposal.no_votes || 0})
-                      </Button>
-                      <Button
-                        variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
-                        size="sm"
-                        onClick={() => handleVote(proposal.id, 'abstain')}
-                        className="flex-1"
-                      >
-                        <Minus size={14} className="mr-1" />
-                        Abstain ({proposal.abstain_votes || 0})
                       </Button>
                     </div>
                   )}

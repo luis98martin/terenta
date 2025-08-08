@@ -16,10 +16,9 @@ export interface Proposal {
   created_at: string;
   updated_at: string;
   group_name?: string;
-  user_vote?: 'yes' | 'no' | 'abstain';
+  user_vote?: 'yes' | 'no';
   yes_votes?: number;
   no_votes?: number;
-  abstain_votes?: number;
   total_votes?: number;
 }
 
@@ -57,10 +56,9 @@ export function useProposals(groupId?: string) {
           ...proposal,
           status: proposal.status as 'active' | 'closed' | 'passed' | 'failed',
           group_name: proposal.groups?.name,
-          user_vote: userVote?.vote_type as 'yes' | 'no' | 'abstain' | undefined,
+          user_vote: userVote && (userVote.vote_type === 'yes' || userVote.vote_type === 'no') ? (userVote.vote_type as 'yes' | 'no') : undefined,
           yes_votes: votes.filter(v => v.vote_type === 'yes').length,
           no_votes: votes.filter(v => v.vote_type === 'no').length,
-          abstain_votes: votes.filter(v => v.vote_type === 'abstain').length,
           total_votes: votes.length
         };
       }) || [];
@@ -130,7 +128,7 @@ export function useProposals(groupId?: string) {
     return data;
   };
 
-  const vote = async (proposalId: string, voteType: 'yes' | 'no' | 'abstain') => {
+  const vote = async (proposalId: string, voteType: 'yes' | 'no') => {
     if (!user) throw new Error('User not authenticated');
 
     const { error } = await supabase
