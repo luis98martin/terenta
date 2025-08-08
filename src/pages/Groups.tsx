@@ -50,15 +50,14 @@ export default function Groups() {
       <AppHeader title="Groups" showSearch />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
-        {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
           <Button 
-            variant="mustard-outline" 
-            className="h-14 flex-col"
+            variant="mustard"
+            className="w-full h-12"
             asChild
           >
             <Link to="/groups/create">
-              <Plus size={20} className="mb-1" />
+              <Plus size={16} className="mr-2" />
               Create Group
             </Link>
           </Button>
