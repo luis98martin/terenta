@@ -206,7 +206,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="relative">
-            <ScrollArea className="h-[48vh] overscroll-contain px-2 pr-2 mb-6">
+            <ScrollArea className="h-[48vh] overscroll-contain px-2 pr-2 mb-3">
               <div className="space-y-3 pb-4">
                 {messages.map((message) => {
                   // Render system notifications (thin, yellow highlight)
