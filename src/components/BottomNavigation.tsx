@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, Vote, User } from "lucide-react";
+import { Home, Users, Calendar } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -17,11 +17,6 @@ const navigationItems = [
     icon: Calendar, 
     label: "Calendar", 
     path: "/calendar" 
-  },
-  { 
-    icon: User, 
-    label: "Profile", 
-    path: "/profile" 
   },
 ];
 
