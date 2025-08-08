@@ -15,7 +15,7 @@ const buttonVariants = cva(
         outline:
           "border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-xl",
         secondary:
-          "bg-primary text-secondary-foreground hover:bg-secondary/80 rounded-xl shadow-md",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl shadow-md",
         ghost: "hover:bg-accent/10 hover:text-accent rounded-xl",
         link: "text-primary underline-offset-4 hover:underline",
         // TeRenta? enhanced variants
