@@ -45,7 +45,7 @@ export function AppHeader({ title, showNotifications = true, showSearch = false,
         
         <div className="flex items-center gap-2">
           <Avatar
-            className="h-8 w-8 cursor-pointer ring-1 ring-border/50"
+            className="h-8 w-8 cursor-pointer"
             onClick={() => navigate('/profile')}
             role="button"
             aria-label="Open profile"
