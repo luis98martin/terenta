@@ -123,54 +123,48 @@ export default function Groups() {
                   className={`animate-slide-up cursor-pointer hover:bg-card/80 transition-colors`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="flex items-start gap-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={group.image_url || undefined} alt={`${group.name} image`} />
-                      <AvatarFallback>
-                        {group.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-card-foreground truncate">
-                          {group.name}
-                        </h3>
-                        <span className="text-xs text-text-secondary bg-background/50 px-2 py-1 rounded">
-                          {group.user_role}
-                        </span>
-                      </div>
-                      {group.description && (
-                        <p className="text-sm text-text-secondary mb-3 line-clamp-2">
-                          {group.description}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-xs text-text-secondary">
-                          <span className="flex items-center gap-1">
-                            <Users size={14} />
-                            {group.member_count} members
+                    <div className="grid grid-cols-[3rem,1fr] gap-4">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={group.image_url || undefined} alt={`${group.name} image`} />
+                        <AvatarFallback>
+                          {group.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="min-w-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-semibold text-card-foreground truncate">
+                            {group.name}
+                          </h3>
+                          <span className="text-xs text-text-secondary bg-background/50 px-2 py-1 rounded">
+                            {group.user_role}
                           </span>
-                          <span>Code: {group.invite_code}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLeaveGroup(group.id, group.name); }}
-                            disabled={leavingId === group.id}
-                          >
-                            {leavingId === group.id ? 'Leaving...' : 'Leave'}
-                          </Button>
-                          <div className="text-accent p-1">
-                            <MessageCircle size={16} />
-                          </div>
-                          <div className="text-accent p-1">
-                            <Calendar size={16} />
-                          </div>
-                        </div>
+                        {group.description && (
+                          <p className="text-sm text-text-secondary mb-3 line-clamp-2">
+                            {group.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="col-span-2 mt-1 flex flex-wrap items-center gap-3 text-xs text-text-secondary">
+                        <span className="flex items-center gap-1">
+                          <Users size={14} />
+                          {group.member_count} members
+                        </span>
+                        <span>Code: {group.invite_code}</span>
+
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="ml-auto"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLeaveGroup(group.id, group.name); }}
+                          disabled={leavingId === group.id}
+                        >
+                          {leavingId === group.id ? 'Leaving...' : 'Leave'}
+                        </Button>
                       </div>
                     </div>
-                  </div>
                 </TeRentaCard>
               </Link>
             ))
