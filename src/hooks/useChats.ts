@@ -99,38 +99,29 @@ export function useChats() {
 }
 
 export function useMessages(chatId: string) {
-  const PAGE_SIZE = 30;
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const { user } = useAuth();
-
-  const formatMessages = (data: any[] | null) => (
-    data?.map((message) => ({
-      ...message,
-      message_type: message.message_type as 'text' | 'image' | 'file',
-      user_name: 'User',
-    })) || []
-  );
 
   const fetchMessages = async () => {
     if (!chatId) return;
-    setLoading(true);
+
     try {
       const { data, error } = await supabase
         .from('messages')
         .select('*')
         .eq('chat_id', chatId)
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE);
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
 
-      const latest = formatMessages(data);
-      // reverse to show oldest at top within the page and newest at bottom
-      setMessages([...latest].reverse());
-      setHasMore((data?.length || 0) === PAGE_SIZE);
+      const formattedMessages = data?.map(message => ({
+        ...message,
+        message_type: message.message_type as 'text' | 'image' | 'file',
+        user_name: 'User' // TODO: Implement user name lookup
+      })) || [];
+
+      setMessages(formattedMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
@@ -138,52 +129,22 @@ export function useMessages(chatId: string) {
     }
   };
 
-  const loadMore = async () => {
-    if (!chatId || !hasMore || loadingMore || messages.length === 0) return;
-    setLoadingMore(true);
-    try {
-      const oldest = messages[0]?.created_at;
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .lt('created_at', oldest)
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE);
-
-      if (error) throw error;
-
-      const older = formatMessages(data);
-      setMessages([...older.reverse(), ...messages]);
-      if (!data || data.length < PAGE_SIZE) setHasMore(false);
-    } catch (error) {
-      console.error('Error loading older messages:', error);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
-
   useEffect(() => {
-    setMessages([]);
-    setHasMore(true);
     fetchMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId]);
 
-  const sendMessage = async (
-    content: string,
-    messageType: 'text' | 'image' | 'file' = 'text',
-    fileUrl?: string
-  ) => {
+  const sendMessage = async (content: string, messageType: 'text' | 'image' | 'file' = 'text', fileUrl?: string) => {
     if (!user || !chatId) throw new Error('User not authenticated or chat not selected');
 
-    const { error } = await supabase.from('messages').insert({
-      chat_id: chatId,
-      user_id: user.id,
-      content,
-      message_type: messageType,
-      file_url: fileUrl,
-    });
+    const { error } = await supabase
+      .from('messages')
+      .insert({
+        chat_id: chatId,
+        user_id: user.id,
+        content,
+        message_type: messageType,
+        file_url: fileUrl
+      });
 
     if (error) throw error;
 
@@ -193,10 +154,7 @@ export function useMessages(chatId: string) {
   return {
     messages,
     loading,
-    loadingMore,
-    hasMore,
-    loadMore,
     sendMessage,
-    refetch: fetchMessages,
+    refetch: fetchMessages
   };
 }

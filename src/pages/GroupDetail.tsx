@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -61,12 +61,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
     }
   }, [chats, group, groupId, createChat]);
 
-  const { messages, sendMessage, refetch: refetchMessages, loadMore, hasMore, loadingMore } = useMessages(chatId);
-
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const prevScrollHeightRef = useRef(0);
-  const pendingRestoreRef = useRef(false);
-  const userIsAtBottomRef = useRef(true);
+  const { messages, sendMessage, refetch: refetchMessages } = useMessages(chatId);
 
   // Fetch profiles for message authors
   useEffect(() => {
@@ -75,37 +70,6 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
       fetchProfiles(userIds);
     }
   }, [messages, fetchProfiles]);
-
-  // Track scroll position and load older messages when reaching top
-  const handleScroll = async (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    userIsAtBottomRef.current = el.scrollTop + el.clientHeight >= el.scrollHeight - 40;
-    if (el.scrollTop <= 48 && hasMore && !loadingMore) {
-      prevScrollHeightRef.current = el.scrollHeight;
-      pendingRestoreRef.current = true;
-      await loadMore();
-    }
-  };
-
-  // Restore scroll position after prepending older messages
-  useEffect(() => {
-    if (pendingRestoreRef.current && messagesContainerRef.current) {
-      const el = messagesContainerRef.current;
-      const newTop = el.scrollHeight - prevScrollHeightRef.current;
-      el.scrollTop = Math.max(newTop, 0);
-      pendingRestoreRef.current = false;
-    }
-  }, [messages]);
-
-  // Auto-scroll to bottom when at bottom or on initial load/new messages
-  useEffect(() => {
-    const el = messagesContainerRef.current;
-    if (!el) return;
-    if (pendingRestoreRef.current) return;
-    if (activeTab === 'chat' && (userIsAtBottomRef.current || messages.length === 0)) {
-      el.scrollTop = el.scrollHeight;
-    }
-  }, [messages, activeTab, chatId]);
 
   // Set up real-time subscription for messages
   useEffect(() => {
@@ -132,25 +96,6 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
       supabase.removeChannel(channel);
     };
   }, [chatId, refetchMessages]);
-
-  // Lock page scroll while in Chat tab so only chat area scrolls
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = body.style.overflow;
-    if (activeTab === 'chat') {
-      html.style.overflow = 'hidden';
-      body.style.overflow = 'hidden';
-    } else {
-      html.style.overflow = prevHtmlOverflow || '';
-      body.style.overflow = prevBodyOverflow || '';
-    }
-    return () => {
-      html.style.overflow = prevHtmlOverflow || '';
-      body.style.overflow = prevBodyOverflow || '';
-    };
-  }, [activeTab]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !chatId) return;
@@ -202,10 +147,10 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
   }
 
   return (
-    <div className={`h-[100dvh] bg-background flex flex-col ${activeTab === 'chat' ? 'overflow-hidden' : ''}`}>
+    <div className="min-h-screen bg-background pb-20">
       <AppHeader title="TeRenta?" showBack backTo="/groups" />
       
-      <div className="flex-1 min-h-0 overflow-hidden px-4 py-4 max-w-lg mx-auto">
+      <div className="px-4 py-6 max-w-lg mx-auto">
         {/* Group Info */}
         <TeRentaCard className="mb-6">
             <div className="flex items-center gap-3 mb-3">
@@ -234,7 +179,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
         </TeRentaCard>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageCircle size={16} />
@@ -251,72 +196,68 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
           </TabsList>
 
           {/* Chat Tab */}
-          <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col">
-            <div className="relative h-full">
-              <div className="flex flex-col h-full min-h-0">
-                <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2 pr-1 pb-24 chat-scroll">
-                  {messages.map((message) => {
-                    // Render system notifications (thin, yellow highlight)
-                    if (message.message_type === 'text' && message.content.includes('is alive!')) {
-                      return (
-                        <div key={message.id} className="flex justify-center">
-                          <div className="w-full text-center text-xs px-3 py-1 rounded-md border bg-accent/15 text-foreground border-accent/30 inline-flex items-center gap-2 justify-center">
-                            <img src="/lovable-uploads/87056922-0d10-4a21-b800-6c0afc9337ce.png" alt="App logo" className="w-4 h-4 rounded-full" />
-                            <span className="truncate">{`${getDisplayName(message.user_id)} is alive!`}</span>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    const isOwnMessage = message.user_id === user?.id;
-                    return (
-                      <div 
-                        key={message.id} 
-                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div 
-                          className={`max-w-[70%] p-3 rounded-2xl shadow-sm ${
-                            isOwnMessage 
-                              ? 'bg-primary text-primary-foreground rounded-br-md' 
-                              : 'bg-surface text-foreground rounded-bl-md border border-border'
-                          }`}
-                        >
-                          <div className="flex flex-col space-y-1">
-                            {!isOwnMessage && (
-                              <span className="font-medium text-xs opacity-70">
-                                {getDisplayName(message.user_id)}
-                              </span>
-                            )}
-                            <p className="text-sm leading-relaxed">{message.content}</p>
-                            <span className={`text-xs opacity-60 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
-                              {new Date(message.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                        </div>
+          <TabsContent value="chat" className="space-y-4">
+            <div className="space-y-3 overflow-y-auto px-2 pb-48">
+              {messages.map((message) => {
+                // Render system notifications (thin, yellow highlight)
+                if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
+                  return (
+                    <div key={message.id} className="flex justify-center">
+                      <div className="w-full text-center text-xs px-3 py-1 rounded-md border bg-accent/15 text-foreground border-accent/30 inline-flex items-center gap-2 justify-center">
+                        <img src="/lovable-uploads/87056922-0d10-4a21-b800-6c0afc9337ce.png" alt="App logo" className="w-4 h-4 rounded-full" />
+                        <span className="truncate">{`${getDisplayName(message.user_id)} is alive!`}</span>
                       </div>
-                    );
-                  })}
-                  {messages.length === 0 && (
-                    <div className="text-center py-8">
-                      <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
                     </div>
-                  )}
-                </div>
-                <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+64px)] sm:bottom-[64px] z-[60] px-2 pt-2 bg-gradient-to-t from-background via-background/80 to-transparent">
-                  <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background p-2 shadow-md">
-                    <Input
-                      placeholder="Type a message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className="flex-1"
-                    />
-                    <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                      <Send size={16} />
-                    </Button>
+                  );
+                }
+
+                const isOwnMessage = message.user_id === user?.id;
+                return (
+                  <div 
+                    key={message.id} 
+                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div 
+                      className={`max-w-[70%] p-3 rounded-2xl shadow-sm ${
+                        isOwnMessage 
+                          ? 'bg-primary text-primary-foreground rounded-br-md' 
+                          : 'bg-surface text-foreground rounded-bl-md border border-border'
+                      }`}
+                    >
+                      <div className="flex flex-col space-y-1">
+                        {!isOwnMessage && (
+                          <span className="font-medium text-xs opacity-70">
+                            {getDisplayName(message.user_id)}
+                          </span>
+                        )}
+                        <p className="text-sm leading-relaxed">{message.content}</p>
+                        <span className={`text-xs opacity-60 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
+                          {new Date(message.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+                );
+              })}
+              {messages.length === 0 && (
+                <div className="text-center py-8">
+                  <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
                 </div>
+              )}
+            </div>
+            <div className="fixed inset-x-0 bottom-24 px-4">
+              <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 shadow-md">
+                <Input
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  className="flex-1"
+                />
+                <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
+                  <Send size={16} />
+                </Button>
               </div>
             </div>
           </TabsContent>
