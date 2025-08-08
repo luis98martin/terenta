@@ -4,6 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfiles } from "@/hooks/useProfiles";
+import { useEffect, useState } from "react";
 
 interface AppHeaderProps {
   title: string;
@@ -17,8 +18,20 @@ export function AppHeader({ title, showNotifications = true, showSearch = false,
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profiles, getDisplayName } = useProfiles();
-  const avatarUrl = user ? profiles[user.id]?.avatar_url ?? undefined : undefined;
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(() => (
+    (user?.user_metadata?.avatar_url as string | undefined) ||
+    (typeof localStorage !== 'undefined' ? localStorage.getItem('avatar_url') || undefined : undefined)
+  ));
   const displayName = user ? getDisplayName(user.id) : 'Profile';
+
+  useEffect(() => {
+    if (!user) return;
+    const latest = profiles[user.id]?.avatar_url;
+    if (latest && latest !== avatarUrl) {
+      setAvatarUrl(latest);
+      try { localStorage.setItem('avatar_url', latest); } catch {}
+    }
+  }, [profiles, user, avatarUrl]);
   const initials = (displayName || 'U')
     .split(' ')
     .map((n) => n?.[0] ?? '')
