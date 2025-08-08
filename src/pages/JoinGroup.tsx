@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,12 +6,16 @@ import { TeRentaCard } from "@/components/TeRentaCard";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function JoinGroup() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const [group, setGroup] = useState<{ id: string; name: string; image_url?: string } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = `Join Group | TeRenta`;
@@ -31,13 +35,20 @@ export default function JoinGroup() {
 
   useEffect(() => {
     const run = async () => {
-      if (!code) return;
+      if (!code) { setLoading(false); return; }
       const normalized = code.toUpperCase();
 
       if (!user) {
-        // Persist for after login and route to sign up
+        // Persist invite code and show auth choice
         localStorage.setItem('pending_join_code', normalized);
-        navigate('/auth/register');
+        try {
+          const { data } = await supabase.rpc('get_group_by_invite', { invite_code: normalized });
+          setGroup((data && Array.isArray(data) ? data[0] : null) || null);
+        } catch (_) {
+          setGroup(null);
+        } finally {
+          setLoading(false);
+        }
         return;
       }
 
@@ -50,6 +61,8 @@ export default function JoinGroup() {
       } catch (err: any) {
         toast({ title: 'Failed to join group', description: err.message || 'Please try again', variant: 'destructive' });
         navigate('/groups');
+      } finally {
+        setLoading(false);
       }
     };
     run();
@@ -57,13 +70,52 @@ export default function JoinGroup() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Joining Group" showBack backTo="/" />
+      <AppHeader title="Join Group" showBack backTo="/" />
       <div className="px-4 py-6 max-w-lg mx-auto">
         <TeRentaCard>
-          <div className="text-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-            <p className="text-text-secondary">Processing your invite…</p>
-          </div>
+          {!user ? (
+            <div className="py-8 space-y-5 text-center">
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+                  <p className="text-text-secondary">Loading invite…</p>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-center gap-3">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={group?.image_url || undefined} alt={`${group?.name || 'Group'} image`} />
+                      <AvatarFallback>{(group?.name || 'G').charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="text-left">
+                      <h1 className="font-semibold text-card-foreground">
+                        {group?.name ? `You’re invited to join ${group.name}` : 'You’re invited to join a group'}
+                      </h1>
+                      <p className="text-sm text-text-secondary">Choose how you want to continue</p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3">
+                    <Button variant="mustard" onClick={() => navigate('/auth/login')}>
+                      I already have an account
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate('/auth/register')}>
+                      Create an account
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-text-secondary">
+                    After you login or sign up, we’ll join you to the group automatically.
+                  </p>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-10">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+              <p className="text-text-secondary">Processing your invite…</p>
+            </div>
+          )}
         </TeRentaCard>
       </div>
       <BottomNavigation />
