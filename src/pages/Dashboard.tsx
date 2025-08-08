@@ -3,7 +3,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Users, Calendar } from "lucide-react";
+import { Users, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useGroups } from "@/hooks/useGroups";
 import { useEvents } from "@/hooks/useEvents";
@@ -42,26 +42,6 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <TeRentaCard variant="highlighted" className="animate-slide-up">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-card-foreground mb-1">
-                Quick Start
-              </h3>
-              <p className="text-sm text-text-secondary">
-                Create a new group to get started
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="mustard" size="icon" asChild>
-                <Link to="/groups/create">
-                  <Plus size={20} />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </TeRentaCard>
 
 
         {/* Recent Groups */}
