@@ -129,13 +129,14 @@ export function useProposals(groupId?: string) {
       const groupIdForChat = proposalData.group_id;
       let chatId: string | null = null;
 
-      // Find existing group chat (pick the earliest one if multiple)
+      // Find existing group chat (pick the most recently updated one to match UI)
       const { data: existingChats } = await supabase
         .from('chats')
-        .select('id, created_at')
+        .select('id, updated_at')
         .eq('group_id', groupIdForChat)
         .eq('type', 'group')
-        .order('created_at', { ascending: true });
+        .order('updated_at', { ascending: false })
+        .limit(1);
 
       if (existingChats && existingChats.length > 0) {
         chatId = existingChats[0].id;
