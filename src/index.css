@@ -124,7 +124,6 @@ All colors MUST be HSL.
   /* Section titles font: unify across the app without changing size or color */
   h1, h2, h3 {
     @apply font-chewy;
-    font-size: calc(1em + 2pt) !important;
   }
 
   /* Custom utility classes */
