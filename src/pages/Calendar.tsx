@@ -1,27 +1,44 @@
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
+import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, MapPin, Users, Clock } from "lucide-react";
-import { useProposals } from "@/hooks/useProposals";
+import { Calendar as CalendarIcon, MapPin, Users, Clock, CheckCircle, XCircle } from "lucide-react";
+import { useEvents } from "@/hooks/useEvents";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
 export default function Calendar() {
-  const { proposals, loading } = useProposals();
+  const { events, loading, updateAttendance } = useEvents();
+  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
-  // Build proposal-based calendar data
-  const proposalsWithDate = proposals.filter(p => p.event_date);
+  // Filter events for selected date
   const eventsForSelectedDate = selectedDate 
-    ? proposalsWithDate.filter(p => {
-        const d = new Date(p.event_date!);
-        return d.toDateString() === (selectedDate as Date).toDateString();
+    ? events.filter(event => {
+        const eventDate = new Date(event.start_date);
+        return eventDate.toDateString() === selectedDate.toDateString();
       })
-    : proposalsWithDate;
+    : events;
 
-  // Get dates that have proposals for calendar highlighting
-  const eventDates = proposalsWithDate.map(p => new Date(p.event_date!));
+  // Get dates that have events for calendar highlighting
+  const eventDates = events.map(event => new Date(event.start_date));
 
+  const handleAttendanceUpdate = async (eventId: string, status: 'attending' | 'not_attending') => {
+    try {
+      await updateAttendance(eventId, status);
+      toast({
+        title: "Attendance updated",
+        description: `You are ${status === 'attending' ? 'attending' : 'not attending'} this event`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to update attendance",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -65,9 +82,9 @@ export default function Calendar() {
               <p className="mt-2 text-text-secondary">Loading events...</p>
             </div>
           ) : eventsForSelectedDate.length > 0 ? (
-            eventsForSelectedDate.map((proposal, index) => (
+            eventsForSelectedDate.map((event, index) => (
               <TeRentaCard 
-                key={proposal.id} 
+                key={event.id} 
                 variant="interactive"
                 className="animate-slide-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
@@ -76,13 +93,21 @@ export default function Calendar() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold text-card-foreground mb-1">
-                        {proposal.title}
+                        {event.title}
                       </h3>
-                      {proposal.description && (
+                      {event.description && (
                         <p className="text-sm text-text-secondary mb-2">
-                          {proposal.description}
+                          {event.description}
                         </p>
                       )}
+                    </div>
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      event.attendance_status === 'attending' ? 'bg-green-500/20 text-green-700 dark:text-green-300' :
+                      event.attendance_status === 'not_attending' ? 'bg-red-500/20 text-red-700 dark:text-red-300' :
+                      'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300'
+                    }`}>
+                      {event.attendance_status === 'attending' ? 'Going' :
+                       event.attendance_status === 'not_attending' ? 'Not Going' : 'Pending'}
                     </div>
                   </div>
                   
@@ -90,23 +115,51 @@ export default function Calendar() {
                     <div className="flex items-center gap-2">
                       <Clock size={14} />
                       <span>
-                        {proposal.event_date ? new Date(proposal.event_date).toLocaleString() : ''}
+                        {new Date(event.start_date).toLocaleString()}
+                        {event.end_date && ` - ${new Date(event.end_date).toLocaleString()}`}
                       </span>
                     </div>
                     
-                    {proposal.location && (
+                    {event.location && (
                       <div className="flex items-center gap-2">
                         <MapPin size={14} />
-                        <span>{proposal.location}</span>
+                        <span>{event.location}</span>
                       </div>
                     )}
                     
-                    {proposal.group_name && (
+                    {event.group_name && (
                       <div className="flex items-center gap-2">
                         <Users size={14} />
-                        <span>{proposal.group_name}</span>
+                        <span>{event.group_name}</span>
                       </div>
                     )}
+                    
+                    <div className="flex items-center gap-2">
+                      <Users size={14} />
+                      <span>{event.attendee_count || 0} attending</span>
+                    </div>
+                  </div>
+                  
+                  {/* Attendance Buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant={event.attendance_status === 'attending' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleAttendanceUpdate(event.id, 'attending')}
+                      className="flex-1"
+                    >
+                      <CheckCircle size={14} className="mr-1" />
+                      Going
+                    </Button>
+                    <Button
+                      variant={event.attendance_status === 'not_attending' ? 'destructive' : 'outline'}
+                      size="sm"
+                      onClick={() => handleAttendanceUpdate(event.id, 'not_attending')}
+                      className="flex-1"
+                    >
+                      <XCircle size={14} className="mr-1" />
+                      Can't Go
+                    </Button>
                   </div>
                 </div>
               </TeRentaCard>
