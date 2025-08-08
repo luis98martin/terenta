@@ -197,7 +197,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="space-y-4">
-            <div className="space-y-3 overflow-y-auto px-2 pb-24">
+            <div className="space-y-3 overflow-y-auto px-2 pb-36">
               {messages.map((message) => {
                 const isOwnMessage = message.user_id === user?.id;
                 return (
@@ -234,7 +234,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                 </div>
               )}
             </div>
-            <div className="fixed inset-x-0 bottom-16 px-4">
+            <div className="fixed inset-x-0 bottom-24 px-4">
               <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 shadow-md">
                 <Input
                   placeholder="Type a message..."

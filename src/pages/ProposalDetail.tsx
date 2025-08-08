@@ -506,12 +506,12 @@ export default function ProposalDetail() {
             </div>
             <div>
               <label className="text-sm font-medium">Image</label>
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-2">
                 <Avatar className="w-12 h-12">
                   <AvatarImage src={editedImageUrl || undefined} alt="Proposal image preview" />
                   <AvatarFallback>{(editedTitle || proposal?.title || 'P').charAt(0)}</AvatarFallback>
                 </Avatar>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                   <label className="inline-flex items-center gap-1 px-3 py-2 rounded border border-border cursor-pointer">
                     <Upload size={14} />
                     <span className="text-sm">Upload</span>
@@ -536,17 +536,17 @@ export default function ProposalDetail() {
                 <p className="text-xs text-text-secondary mt-1">Uploading...</p>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button 
                 variant="outline" 
                 onClick={() => setIsEditing(false)}
-                className="flex-1"
+                className="w-full sm:flex-1"
               >
                 Cancel
               </Button>
               <Button 
                 onClick={handleSaveChanges}
-                className="flex-1"
+                className="w-full sm:flex-1"
                 disabled={uploadingImage}
               >
                 Save Changes

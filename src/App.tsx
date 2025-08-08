@@ -15,6 +15,8 @@ import CreateProposal from "./pages/CreateProposal";
 import ProposalDetail from "./pages/ProposalDetail";
 import GroupManagement from "./pages/GroupManagement";
 import Calendar from "./pages/Calendar";
+import Chat from "./pages/Chat";
+import ChatPage from "./pages/ChatPage";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -40,6 +42,8 @@ const App = () => (
           <Route path="/groups/:groupId/proposals/:proposalId" element={<AuthGuard><ProposalDetail /></AuthGuard>} />
           <Route path="/groups/:groupId/manage" element={<AuthGuard><GroupManagement /></AuthGuard>} />
           <Route path="/calendar" element={<AuthGuard><Calendar /></AuthGuard>} />
+          <Route path="/chat" element={<AuthGuard><Chat /></AuthGuard>} />
+          <Route path="/chat/:chatId" element={<AuthGuard><ChatPage /></AuthGuard>} />
           <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
           
           {/* Catch-all route */}

@@ -21,36 +21,37 @@ export default function Chat() {
           </div>
         ) : chats.length > 0 ? (
           chats.map((chat, index) => (
-            <TeRentaCard 
-              key={chat.id} 
-              variant="interactive"
-              className="animate-slide-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-accent/10 text-accent rounded-full flex items-center justify-center relative">
-                  <MessageCircle size={20} />
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-surface rounded-full flex items-center justify-center">
-                    <Users size={10} className="text-text-secondary" />
-                  </div>
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="font-medium text-card-foreground truncate">
-                      {chat.name}
-                    </h4>
-                    <span className="text-xs text-text-secondary">
-                      Group chat
-                    </span>
+            <Link key={chat.id} to={`/chat/${chat.id}`} className="block">
+              <TeRentaCard 
+                variant="interactive"
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-accent/10 text-accent rounded-full flex items-center justify-center relative">
+                    <MessageCircle size={20} />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-surface rounded-full flex items-center justify-center">
+                      <Users size={10} className="text-text-secondary" />
+                    </div>
                   </div>
                   
-                  <p className="text-sm text-text-secondary truncate">
-                    No messages yet
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="font-medium text-card-foreground truncate">
+                        {chat.name}
+                      </h4>
+                      <span className="text-xs text-text-secondary">
+                        Group chat
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-text-secondary truncate">
+                      No messages yet
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </TeRentaCard>
+              </TeRentaCard>
+            </Link>
           ))
         ) : (
           <div className="text-center py-12">

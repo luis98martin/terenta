@@ -16,6 +16,7 @@ export interface Event {
   group_name?: string;
   attendance_status?: 'attending' | 'not_attending' | 'pending';
   attendee_count?: number;
+  group_image_url?: string;
 }
 
 export function useEvents(groupId?: string) {
@@ -31,7 +32,7 @@ export function useEvents(groupId?: string) {
         .from('events')
         .select(`
           *,
-          groups(name),
+          groups(name, image_url),
           event_attendees(status, user_id)
         `)
         .order('start_date', { ascending: true });
@@ -63,7 +64,8 @@ export function useEvents(groupId?: string) {
         ...event,
         group_name: event.groups?.name,
         attendance_status: (event.event_attendees?.find(a => a.user_id === user.id)?.status || 'pending') as 'attending' | 'not_attending' | 'pending',
-        attendee_count: event.event_attendees?.filter(a => a.status === 'attending').length || 0
+        attendee_count: event.event_attendees?.filter(a => a.status === 'attending').length || 0,
+        group_image_url: event.groups?.image_url
       })) || [];
 
       setEvents(formattedEvents);

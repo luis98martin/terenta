@@ -2,6 +2,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, Users, Calendar, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useGroups } from "@/hooks/useGroups";
@@ -23,7 +24,7 @@ export default function Dashboard() {
     { icon: Users, label: "Groups", value: groupsCount.toString(), color: "text-accent" },
     { icon: Calendar, label: "Events", value: eventsCount.toString(), color: "text-accent" },
     { icon: MessageCircle, label: "Messages", value: chatsCount.toString(), color: "text-accent" },
-  ];
+  ] as const;
 
   // Get recent groups (limit to 3)
   const recentGroups = groups?.slice(0, 3) || [];
@@ -70,19 +71,24 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-3">
           {quickStats.map((stat, index) => (
-            <TeRentaCard 
-              key={stat.label} 
-              className={`text-center animate-slide-up`}
-              style={{ animationDelay: `${index * 0.1}s` }}
+            <Link
+              key={stat.label}
+              to={stat.label === 'Groups' ? '/groups' : stat.label === 'Events' ? '/calendar' : '/chat'}
+              className="block"
             >
-              <stat.icon className={`w-6 h-6 mx-auto mb-2 ${stat.color}`} />
-              <div className="text-2xl font-bold text-card-foreground">
-                {stat.value}
-              </div>
-              <div className="text-xs text-text-secondary">
-                {stat.label}
-              </div>
-            </TeRentaCard>
+              <TeRentaCard 
+                className={`text-center animate-slide-up`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <stat.icon className={`w-6 h-6 mx-auto mb-2 ${stat.color}`} />
+                <div className="text-2xl font-bold text-card-foreground">
+                  {stat.value}
+                </div>
+                <div className="text-xs text-text-secondary">
+                  {stat.label}
+                </div>
+              </TeRentaCard>
+            </Link>
           ))}
         </div>
 
@@ -101,28 +107,30 @@ export default function Dashboard() {
             </div>
           ) : recentGroups.length > 0 ? (
             recentGroups.map((group, index) => (
-              <TeRentaCard 
-                key={group.id} 
-                variant="interactive" 
-                className={`animate-slide-up`}
-                style={{ animationDelay: `${(index + 3) * 0.1}s` }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                      <Users className="text-accent" size={20} />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-card-foreground">
-                        {group.name}
-                      </h4>
-                      <p className="text-sm text-text-secondary">
-                        {group.member_count} members • {group.user_role}
-                      </p>
+              <Link key={group.id} to={`/groups/${group.id}`} className="block">
+                <TeRentaCard 
+                  variant="interactive" 
+                  className={`animate-slide-up`}
+                  style={{ animationDelay: `${(index + 3) * 0.1}s` }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={group.image_url || undefined} alt={`${group.name} image`} />
+                        <AvatarFallback>{group.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h4 className="font-medium text-card-foreground">
+                          {group.name}
+                        </h4>
+                        <p className="text-sm text-text-secondary">
+                          {group.member_count} members • {group.user_role}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </TeRentaCard>
+                </TeRentaCard>
+              </Link>
             ))
           ) : (
             <TeRentaCard className="text-center py-6">
@@ -145,26 +153,28 @@ export default function Dashboard() {
             </div>
           ) : upcomingEvents.length > 0 ? (
             upcomingEvents.map((event, index) => (
-              <TeRentaCard 
-                key={event.id} 
-                variant="interactive"
-                className={`animate-slide-up`}
-                style={{ animationDelay: `${(index + 6) * 0.1}s` }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Calendar className="text-primary" size={20} />
+              <Link key={event.id} to="/calendar" className="block">
+                <TeRentaCard 
+                  variant="interactive"
+                  className={`animate-slide-up`}
+                  style={{ animationDelay: `${(index + 6) * 0.1}s` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={event.group_image_url || undefined} alt={`${event.group_name || 'Event'} image`} />
+                      <AvatarFallback>{(event.group_name || 'E').charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-card-foreground">
+                        {event.title}
+                      </h4>
+                      <p className="text-sm text-text-secondary">
+                        {format(new Date(event.start_date), 'MMM d, h:mm a')} • {event.group_name || 'Personal'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-card-foreground">
-                      {event.title}
-                    </h4>
-                    <p className="text-sm text-text-secondary">
-                      {format(new Date(event.start_date), 'MMM d, h:mm a')} • {event.group_name || 'Personal'}
-                    </p>
-                  </div>
-                </div>
-              </TeRentaCard>
+                </TeRentaCard>
+              </Link>
             ))
           ) : (
             <TeRentaCard className="text-center py-6">
