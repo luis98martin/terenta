@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfiles } from "@/hooks/useProfiles";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   User, 
   Settings, 
@@ -17,7 +18,8 @@ import {
   Calendar,
   Users,
   MessageCircle,
-  ChevronRight
+  ChevronRight,
+  Upload
 } from "lucide-react";
 
 const profileStats = [
@@ -36,6 +38,52 @@ const menuItems = [
 export default function Profile() {
   const { user, signOut } = useAuth();
   const { getDisplayName } = useProfiles();
+  const [isEditing, setIsEditing] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [stats, setStats] = useState({ eventsOrganized: 0, groupsJoined: 0, messagesSent: 0 });
+
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setAvatarUrl(profile?.avatar_url || null);
+
+      const [{ count: eventsCount }, { count: groupsCount }, { count: messagesCount }] = await Promise.all([
+        supabase.from('events').select('*', { count: 'exact', head: true }).eq('created_by', user.id),
+        supabase.from('group_members').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('messages').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+      ]);
+      setStats({
+        eventsOrganized: eventsCount || 0,
+        groupsJoined: groupsCount || 0,
+        messagesSent: messagesCount || 0,
+      });
+    };
+    load();
+  }, [user]);
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!user) return;
+    try {
+      setUploading(true);
+      const path = `${user.id}/avatar.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+      const newUrl = data.publicUrl;
+      await supabase.from('profiles').update({ avatar_url: newUrl }).eq('user_id', user.id);
+      setAvatarUrl(newUrl);
+    } finally {
+      setUploading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-background pb-20">
       <AppHeader title="Profile" />
@@ -43,9 +91,12 @@ export default function Profile() {
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
         {/* Profile Info */}
         <TeRentaCard className="text-center animate-fade-in">
-          <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <User className="text-accent" size={32} />
-          </div>
+          <Avatar className="w-20 h-20 mx-auto mb-4">
+            <AvatarImage src={avatarUrl || undefined} alt="Profile picture" />
+            <AvatarFallback>
+              {user ? getDisplayName(user.id).charAt(0) : 'U'}
+            </AvatarFallback>
+          </Avatar>
           
           <h2 className="text-xl font-semibold text-card-foreground mb-1">
             {user ? getDisplayName(user.id) : 'Loading...'}
@@ -54,28 +105,28 @@ export default function Profile() {
             {user?.email || 'Loading...'}
           </p>
           
-          <Button variant="mustard-outline" size="sm">
+          <Button variant="mustard-outline" size="sm" onClick={() => setIsEditing(true)}>
             Edit Profile
           </Button>
         </TeRentaCard>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          {profileStats.map((stat, index) => (
-            <TeRentaCard 
-              key={stat.label} 
-              className={`text-center animate-slide-up`}
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <stat.icon className="w-6 h-6 mx-auto mb-2 text-accent" />
-              <div className="text-xl font-bold text-card-foreground">
-                {stat.value}
-              </div>
-              <div className="text-xs text-text-secondary">
-                {stat.label}
-              </div>
-            </TeRentaCard>
-          ))}
+          <TeRentaCard className="text-center animate-slide-up" style={{ animationDelay: `0s` }}>
+            <Calendar className="w-6 h-6 mx-auto mb-2 text-accent" />
+            <div className="text-xl font-bold text-card-foreground">{stats.eventsOrganized}</div>
+            <div className="text-xs text-text-secondary">Events Organized</div>
+          </TeRentaCard>
+          <TeRentaCard className="text-center animate-slide-up" style={{ animationDelay: `0.1s` }}>
+            <Users className="w-6 h-6 mx-auto mb-2 text-accent" />
+            <div className="text-xl font-bold text-card-foreground">{stats.groupsJoined}</div>
+            <div className="text-xs text-text-secondary">Groups Joined</div>
+          </TeRentaCard>
+          <TeRentaCard className="text-center animate-slide-up" style={{ animationDelay: `0.2s` }}>
+            <MessageCircle className="w-6 h-6 mx-auto mb-2 text-accent" />
+            <div className="text-xl font-bold text-card-foreground">{stats.messagesSent}</div>
+            <div className="text-xs text-text-secondary">Messages Sent</div>
+          </TeRentaCard>
         </div>
 
         {/* Menu Items */}
@@ -129,6 +180,44 @@ export default function Profile() {
           </TeRentaCard>
         </div>
       </div>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Avatar className="w-16 h-16">
+                <AvatarImage src={avatarUrl || undefined} alt="Current avatar" />
+                <AvatarFallback>{user ? getDisplayName(user.id).charAt(0) : 'U'}</AvatarFallback>
+              </Avatar>
+              <label className="inline-flex items-center gap-2 px-3 py-2 rounded border border-border cursor-pointer">
+                <Upload size={14} />
+                <span className="text-sm">{uploading ? 'Uploading...' : 'Upload new'}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleAvatarUpload(file);
+                  }}
+                />
+              </label>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => setIsEditing(false)}>
+                Close
+              </Button>
+              <Button className="flex-1" onClick={() => setIsEditing(false)} disabled={uploading}>
+                Done
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNavigation />
     </div>

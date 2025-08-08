@@ -39,9 +39,10 @@ export default function GroupManagement() {
 
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState("");
-  const [editedDescription, setEditedDescription] = useState("");
+const [isEditing, setIsEditing] = useState(false);
+const [editedName, setEditedName] = useState("");
+const [editedDescription, setEditedDescription] = useState("");
+const [uploadingImage, setUploadingImage] = useState(false);
 
   const group = groups.find(g => g.id === groupId);
   const isAdmin = group?.user_role === 'admin';
@@ -161,6 +162,47 @@ export default function GroupManagement() {
     }
   };
 
+  const handleGroupImageUpload = async (file: File) => {
+    if (!group) return;
+    try {
+      setUploadingImage(true);
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `${group.id}/cover.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('group-images')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from('group-images').getPublicUrl(path);
+      const newUrl = data.publicUrl;
+      const { error: updateError } = await supabase
+        .from('groups')
+        .update({ image_url: newUrl })
+        .eq('id', group.id);
+      if (updateError) throw updateError;
+      toast({ title: 'Group image updated' });
+    } catch (error: any) {
+      toast({ title: 'Failed to update image', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!group) return;
+    if (!window.confirm('Are you sure you want to delete this group? This action cannot be undone.')) return;
+    try {
+      const { error } = await supabase
+        .from('groups')
+        .delete()
+        .eq('id', group.id);
+      if (error) throw error;
+      toast({ title: 'Group deleted' });
+      navigate('/groups');
+    } catch (error: any) {
+      toast({ title: 'Failed to delete group', description: error.message, variant: 'destructive' });
+    }
+  };
+
   if (!group) {
     return (
       <div className="min-h-screen bg-background pb-20">
@@ -217,6 +259,33 @@ export default function GroupManagement() {
                 Edit
               </Button>
             </div>
+
+            <div className="flex flex-col items-center gap-2">
+              <div className="relative">
+                <Avatar className="w-24 h-24">
+                  <AvatarImage src={group.image_url || undefined} alt={`${group.name} image`} />
+                  <AvatarFallback>{group.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                {isAdmin && (
+                  <label className="absolute bottom-0 right-0 bg-surface border border-border rounded-full p-1 cursor-pointer">
+                    <Upload size={14} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleGroupImageUpload(file);
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+              {uploadingImage && (
+                <span className="text-xs text-text-secondary">Uploading...</span>
+              )}
+            </div>
+
             {group.description && (
               <p className="text-text-secondary">{group.description}</p>
             )}
@@ -290,6 +359,16 @@ export default function GroupManagement() {
                 </div>
               ))
             )}
+          </div>
+        </TeRentaCard>
+        {/* Danger Zone */}
+        <TeRentaCard>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-destructive">Danger Zone</h3>
+            <p className="text-sm text-text-secondary">Deleting a group will remove all its content.</p>
+            <Button variant="destructive" onClick={handleDeleteGroup}>
+              Delete Group
+            </Button>
           </div>
         </TeRentaCard>
       </div>

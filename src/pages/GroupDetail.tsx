@@ -352,30 +352,74 @@ export default function GroupDetail() {
 
           {/* Events Tab */}
           <TabsContent value="events" className="space-y-4">
-            <div className="space-y-3">
-              {events.map((event) => (
-                <TeRentaCard key={event.id} variant="interactive">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-card-foreground">{event.title}</h3>
-                    {event.description && (
-                      <p className="text-sm text-text-secondary">{event.description}</p>
-                    )}
-                    <div className="text-sm text-text-secondary">
-                      {new Date(event.start_date).toLocaleString()}
-                    </div>
-                    {event.location && (
-                      <div className="text-sm text-text-secondary">📍 {event.location}</div>
-                    )}
+            {(() => {
+              const combined = [
+                ...events.map(e => ({
+                  type: 'event' as const,
+                  id: e.id,
+                  date: new Date(e.start_date).getTime(),
+                  data: e,
+                })),
+                ...proposals.map(p => ({
+                  type: 'proposal' as const,
+                  id: p.id,
+                  // Prefer event_date, fallback to created_at
+                  date: new Date(p.event_date || p.created_at).getTime(),
+                  data: p,
+                }))
+              ].sort((a, b) => a.date - b.date);
+
+              if (combined.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <Calendar className="w-12 h-12 mx-auto text-text-secondary mb-2" />
+                    <p className="text-text-secondary">No upcoming items. New proposals also appear here.</p>
                   </div>
-                </TeRentaCard>
-              ))}
-              {events.length === 0 && (
-                <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 mx-auto text-text-secondary mb-2" />
-                  <p className="text-text-secondary">No events yet. Events are created from accepted proposals!</p>
+                );
+              }
+
+              return (
+                <div className="space-y-3">
+                  {combined.map(item => (
+                    item.type === 'event' ? (
+                      <TeRentaCard key={`event-${item.id}`} variant="interactive">
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-card-foreground">{item.data.title}</h3>
+                          {item.data.description && (
+                            <p className="text-sm text-text-secondary">{item.data.description}</p>
+                          )}
+                          <div className="text-sm text-text-secondary">
+                            {new Date(item.data.start_date).toLocaleString()}
+                          </div>
+                          {item.data.location && (
+                            <div className="text-sm text-text-secondary">📍 {item.data.location}</div>
+                          )}
+                        </div>
+                      </TeRentaCard>
+                    ) : (
+                      <Link key={`proposal-${item.id}`} to={`/groups/${groupId}/proposals/${item.id}`}>
+                        <TeRentaCard variant="highlighted">
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold text-card-foreground">{item.data.title}</h4>
+                              <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full">Proposal</span>
+                            </div>
+                            {item.data.event_date && (
+                              <div className="text-sm text-text-secondary">
+                                🗓️ {new Date(item.data.event_date).toLocaleString()}
+                              </div>
+                            )}
+                            {!item.data.event_date && (
+                              <div className="text-xs text-text-secondary">Created {new Date(item.data.created_at).toLocaleString()}</div>
+                            )}
+                          </div>
+                        </TeRentaCard>
+                      </Link>
+                    )
+                  ))}
                 </div>
-              )}
-            </div>
+              );
+            })()}
           </TabsContent>
         </Tabs>
       </div>

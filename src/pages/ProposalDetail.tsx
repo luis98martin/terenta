@@ -223,6 +223,22 @@ export default function ProposalDetail() {
     }
   };
 
+  const handleDeleteProposal = async () => {
+    if (!proposal) return;
+    if (!window.confirm('Delete this proposal? This action cannot be undone.')) return;
+    try {
+      const { error } = await supabase
+        .from('proposals')
+        .delete()
+        .eq('id', proposal.id);
+      if (error) throw error;
+      toast({ title: 'Proposal deleted' });
+      navigate(`/groups/${groupId}`);
+    } catch (error: any) {
+      toast({ title: 'Failed to delete proposal', description: error.message, variant: 'destructive' });
+    }
+  };
+
   if (!proposal) {
     return (
       <div className="min-h-screen bg-background pb-20">
@@ -286,6 +302,11 @@ export default function ProposalDetail() {
                   >
                     <Edit2 size={14} className="mr-1" />
                     Edit
+                  </Button>
+                )}
+                {proposal.created_by === user?.id && (
+                  <Button variant="destructive" size="sm" onClick={handleDeleteProposal}>
+                    Delete
                   </Button>
                 )}
               </div>
