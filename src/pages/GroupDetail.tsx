@@ -17,6 +17,7 @@ import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -197,55 +198,57 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="relative">
-            <div className="space-y-3 overflow-y-auto px-2 pr-2 pb-2 mb-24">
-              {messages.map((message) => {
-                // Render system notifications (thin, yellow highlight)
-                if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
+            <ScrollArea className="h-[48vh] overscroll-contain px-2 pr-2">
+              <div className="space-y-3 pb-4">
+                {messages.map((message) => {
+                  // Render system notifications (thin, yellow highlight)
+                  if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
+                    return (
+                      <div key={message.id} className="flex justify-center">
+                        <div className="w-full text-center text-xs px-3 py-1 rounded-md border bg-accent/15 text-foreground border-accent/30 inline-flex items-center gap-2 justify-center">
+                          <img src="/lovable-uploads/87056922-0d10-4a21-b800-6c0afc9337ce.png" alt="App logo" className="w-4 h-4 rounded-full" />
+                          <span className="truncate">{`${getDisplayName(message.user_id)} is alive!`}</span>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const isOwnMessage = message.user_id === user?.id;
                   return (
-                    <div key={message.id} className="flex justify-center">
-                      <div className="w-full text-center text-xs px-3 py-1 rounded-md border bg-accent/15 text-foreground border-accent/30 inline-flex items-center gap-2 justify-center">
-                        <img src="/lovable-uploads/87056922-0d10-4a21-b800-6c0afc9337ce.png" alt="App logo" className="w-4 h-4 rounded-full" />
-                        <span className="truncate">{`${getDisplayName(message.user_id)} is alive!`}</span>
+                    <div 
+                      key={message.id} 
+                      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div 
+                        className={`max-w-[70%] p-3 rounded-2xl shadow-sm ${
+                          isOwnMessage 
+                            ? 'bg-primary text-primary-foreground rounded-br-md' 
+                            : 'bg-surface text-foreground rounded-bl-md border border-border'
+                        }`}
+                      >
+                        <div className="flex flex-col space-y-1">
+                          {!isOwnMessage && (
+                            <span className="font-medium text-xs opacity-70">
+                              {getDisplayName(message.user_id)}
+                            </span>
+                          )}
+                          <p className="text-sm leading-relaxed">{message.content}</p>
+                          <span className={`text-xs opacity-60 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
+                            {new Date(message.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
-                }
-
-                const isOwnMessage = message.user_id === user?.id;
-                return (
-                  <div 
-                    key={message.id} 
-                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div 
-                      className={`max-w-[70%] p-3 rounded-2xl shadow-sm ${
-                        isOwnMessage 
-                          ? 'bg-primary text-primary-foreground rounded-br-md' 
-                          : 'bg-surface text-foreground rounded-bl-md border border-border'
-                      }`}
-                    >
-                      <div className="flex flex-col space-y-1">
-                        {!isOwnMessage && (
-                          <span className="font-medium text-xs opacity-70">
-                            {getDisplayName(message.user_id)}
-                          </span>
-                        )}
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                        <span className={`text-xs opacity-60 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
-                          {new Date(message.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                    </div>
+                })}
+                {messages.length === 0 && (
+                  <div className="text-center py-8">
+                    <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
                   </div>
-                );
-              })}
-              {messages.length === 0 && (
-                <div className="text-center py-8">
-                  <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </ScrollArea>
             <div className="fixed inset-x-0 bottom-24 px-4">
               <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 shadow-md">
                 <Input
