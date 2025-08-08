@@ -56,9 +56,11 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   );
   const measureRef = useRef<HTMLSpanElement | null>(null);
   const [minWidth, setMinWidth] = useState<number>(0);
+  const [minHeight, setMinHeight] = useState<number>(0);
   useEffect(() => {
     if (measureRef.current) {
       setMinWidth(measureRef.current.offsetWidth);
+      setMinHeight(measureRef.current.offsetHeight);
     }
   }, [longestWord]);
 
@@ -73,8 +75,8 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
         {longestWord}
       </span>
 
-      <span style={{ minWidth }} className="whitespace-nowrap inline-block">
-        {text}
+      <span style={{ minWidth, minHeight }} className="whitespace-nowrap inline-block">
+        {text || "\u00A0"}
       </span>
       {showCursor && (
         <span aria-hidden className="ml-1 select-none" style={{ opacity: cursorVisible ? 1 : 0 }}>
