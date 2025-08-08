@@ -262,7 +262,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
             <div className="space-y-8">
               {/* Show proposals AND events from proposals here */}
               {proposals.map((proposal) => (
-                <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`}>
+                <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`} className="block">
                   <TeRentaCard variant="interactive">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
@@ -426,7 +426,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                           </div>
                       </TeRentaCard>
                     ) : (
-                      <Link key={`proposal-${item.id}`} to={`/groups/${groupId}/proposals/${item.id}`}>
+                      <Link key={`proposal-${item.id}`} to={`/groups/${groupId}/proposals/${item.id}`} className="block">
                         <TeRentaCard variant="interactive">
                           <div className="flex items-start gap-3">
                             <Avatar className="w-10 h-10 mt-0.5">
