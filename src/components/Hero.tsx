@@ -4,22 +4,22 @@ import TypewriterText from "@/components/TypewriterText";
 const heroImage = "/lovable-uploads/fb78e51f-a864-4913-9b0d-371fbdc60087.png";
 
 const words = [
-  "Comida",
-  "Cine",
-  "Golf",
-  "Copas",
-  "Viaje",
-  "Fiesta",
-  "Padel",
-  "Cerves",
-  "Cena",
+  "Comida?",
+  "Cine?",
+  "Golf?",
+  "Copas?",
+  "Viaje?",
+  "Fiesta?",
+  "Padel?",
+  "Cerves?",
+  "Cena?",
 ];
 
 const Hero: React.FC = () => {
   return (
-    <div className="flex items-center justify-between gap-6 md:gap-8">
+    <div className="flex items-center justify-center gap-3 md:gap-4">
       <div className="flex flex-col items-end text-right">
-        <h1 className="font-patrick font-bold text-4xl md:text-5xl mb-2 text-brand leading-tight">
+        <h1 className="font-chewy font-bold text-4xl md:text-5xl mb-1 text-brand leading-tight">
           Te Renta
         </h1>
         <TypewriterText

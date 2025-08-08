@@ -22,6 +22,7 @@ export default {
         marker: ['"Permanent Marker"', 'cursive'],
         montserrat: ['Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         patrick: ['"Patrick Hand"', 'cursive'],
+        chewy: ['"Chewy"', 'cursive'],
       },
 			colors: {
 				border: 'hsl(var(--border))',
