@@ -259,117 +259,170 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
               </Link>
             </Button>
 
+            {/* Not Answered - shown by default */}
             <div className="space-y-4">
-              {/* Show proposals AND events from proposals here */}
-              {proposals.map((proposal) => (
-                <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`} className="block">
-                  <TeRentaCard variant="interactive">
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 flex items-start gap-3">
-                          <Avatar className="w-10 h-10 mt-0.5">
-                            <AvatarImage src={proposal.image_url || undefined} alt={`Proposal image for ${proposal.title}`} />
-                            <AvatarFallback>{proposal.title.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-card-foreground mb-1">{proposal.title}</h3>
-                            <p className="text-xs text-text-secondary">by {getDisplayName(proposal.created_by)}</p>
-                            {proposal.description && (
-                              <p className="text-sm text-text-secondary mt-1 line-clamp-2">{proposal.description}</p>
-                            )}
+              {notAnswered.length > 0 ? (
+                notAnswered.map((proposal) => (
+                  <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`} className="block">
+                    <TeRentaCard variant="interactive">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 flex items-start gap-3">
+                            <Avatar className="w-10 h-10 mt-0.5">
+                              <AvatarImage src={proposal.image_url || undefined} alt={`Proposal image for ${proposal.title}`} />
+                              <AvatarFallback>{proposal.title.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-card-foreground mb-1">{proposal.title}</h3>
+                              <p className="text-xs text-text-secondary">by {getDisplayName(proposal.created_by)}</p>
+                              {proposal.description && (
+                                <p className="text-sm text-text-secondary mt-1 line-clamp-2">{proposal.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            proposal.status === 'active' ? 'bg-green-100 text-green-800' :
+                            proposal.status === 'passed' ? 'bg-blue-100 text-blue-800' :
+                            proposal.status === 'failed' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {proposal.status}
                           </div>
                         </div>
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          proposal.status === 'active' ? 'bg-green-100 text-green-800' :
-                          proposal.status === 'passed' ? 'bg-blue-100 text-blue-800' :
-                          proposal.status === 'failed' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {proposal.status}
+
+                        {/* Voting Results */}
+                        <div className="text-sm">
+                          <div className="flex justify-between mb-1">
+                            <span className="text-green-600">Yes: {proposal.yes_votes || 0}</span>
+                            <span className="text-red-600">No: {proposal.no_votes || 0}</span>
+                            <span className="text-gray-600">Abstain: {proposal.abstain_votes || 0}</span>
+                          </div>
                         </div>
+
+                        {/* Voting Buttons */}
+                        {proposal.status === 'active' && (
+                          <div className="flex gap-2">
+                            <Button
+                              variant={proposal.user_vote === 'yes' ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'yes'); }}
+                              className="flex-1"
+                            >
+                              <ThumbsUp size={14} className="mr-1" />
+                              Yes
+                            </Button>
+                            <Button
+                              variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
+                              size="sm"
+                              onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'no'); }}
+                              className="flex-1"
+                            >
+                              <ThumbsDown size={14} className="mr-1" />
+                              No
+                            </Button>
+                            <Button
+                              variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
+                              size="sm"
+                              onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'abstain'); }}
+                              className="flex-1"
+                            >
+                              <Minus size={14} className="mr-1" />
+                              Abstain
+                            </Button>
+                          </div>
+                        )}
+
+                        {proposal.user_vote && proposal.status === 'active' && (
+                          <div className="text-xs text-center text-text-secondary bg-background/50 py-2 rounded">
+                            You voted: {proposal.user_vote} • Click any button to change your vote
+                          </div>
+                        )}
                       </div>
-
-                      {/* Voting Results */}
-                      <div className="text-sm">
-                        <div className="flex justify-between mb-1">
-                          <span className="text-green-600">Yes: {proposal.yes_votes || 0}</span>
-                          <span className="text-red-600">No: {proposal.no_votes || 0}</span>
-                          <span className="text-gray-600">Abstain: {proposal.abstain_votes || 0}</span>
-                        </div>
-                      </div>
-
-                      {/* Voting Buttons */}
-                      {proposal.status === 'active' && (
-                        <div className="flex gap-2">
-                          <Button
-                            variant={proposal.user_vote === 'yes' ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'yes'); }}
-                            className="flex-1"
-                          >
-                            <ThumbsUp size={14} className="mr-1" />
-                            Yes
-                          </Button>
-                          <Button
-                            variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
-                            size="sm"
-                            onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'no'); }}
-                            className="flex-1"
-                          >
-                            <ThumbsDown size={14} className="mr-1" />
-                            No
-                          </Button>
-                          <Button
-                            variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
-                            size="sm"
-                            onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'abstain'); }}
-                            className="flex-1"
-                          >
-                            <Minus size={14} className="mr-1" />
-                            Abstain
-                          </Button>
-                        </div>
-                      )}
-
-                      {proposal.user_vote && proposal.status === 'active' && (
-                        <div className="text-xs text-center text-text-secondary bg-background/50 py-2 rounded">
-                          You voted: {proposal.user_vote} • Click any button to change your vote
-                        </div>
-                      )}
-                    </div>
-                  </TeRentaCard>
-                </Link>
-              ))}
-              {/* Show upcoming events from proposals */}
-              {events.map((event) => (
-                <TeRentaCard key={`event-${event.id}`} variant="highlighted">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-card-foreground">📅 {event.title}</h4>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        Event
-                      </span>
-                    </div>
-                    {event.description && (
-                      <p className="text-sm text-text-secondary">{event.description}</p>
-                    )}
-                    <div className="text-sm text-text-secondary">
-                      🗓️ {new Date(event.start_date).toLocaleString()}
-                    </div>
-                    {event.location && (
-                      <div className="text-sm text-text-secondary">📍 {event.location}</div>
-                    )}
-                  </div>
-                </TeRentaCard>
-              ))}
-
-              {proposals.length === 0 && events.length === 0 && (
-                <div className="text-center py-8">
-                  <Vote className="w-12 h-12 mx-auto text-text-secondary mb-2" />
-                  <p className="text-text-secondary">No proposals yet. Create the first one!</p>
-                </div>
+                    </TeRentaCard>
+                  </Link>
+                ))
+              ) : (
+                <div className="text-center py-6 text-text-secondary text-sm">No pending proposals</div>
               )}
             </div>
+
+            {/* Answered - collapsed by default */}
+            <Accordion type="multiple" className="w-full">
+              <AccordionItem value="yes">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2"><Check size={16} /> Yes ({accepted.length})</div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4">
+                    {accepted.map((proposal) => (
+                      <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`} className="block">
+                        <TeRentaCard variant="interactive">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 flex items-start gap-3">
+                                <Avatar className="w-10 h-10 mt-0.5">
+                                  <AvatarImage src={proposal.image_url || undefined} alt={`Proposal image for ${proposal.title}`} />
+                                  <AvatarFallback>{proposal.title.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-card-foreground mb-1">{proposal.title}</h3>
+                                  <p className="text-xs text-text-secondary">by {getDisplayName(proposal.created_by)}</p>
+                                  {proposal.description && (
+                                    <p className="text-sm text-text-secondary mt-1 line-clamp-2">{proposal.description}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <Check size={16} className="text-green-600" />
+                            </div>
+                          </div>
+                        </TeRentaCard>
+                      </Link>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="no">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2"><X size={16} /> No ({notAccepted.length})</div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4">
+                    {notAccepted.map((proposal) => (
+                      <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`} className="block">
+                        <TeRentaCard variant="interactive">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 flex items-start gap-3">
+                                <Avatar className="w-10 h-10 mt-0.5">
+                                  <AvatarImage src={proposal.image_url || undefined} alt={`Proposal image for ${proposal.title}`} />
+                                  <AvatarFallback>{proposal.title.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-card-foreground mb-1">{proposal.title}</h3>
+                                  <p className="text-xs text-text-secondary">by {getDisplayName(proposal.created_by)}</p>
+                                  {proposal.description && (
+                                    <p className="text-sm text-text-secondary mt-1 line-clamp-2">{proposal.description}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <X size={16} className="text-red-600" />
+                            </div>
+                          </div>
+                        </TeRentaCard>
+                      </Link>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            {proposals.length === 0 && (
+              <div className="text-center py-8">
+                <Vote className="w-12 h-12 mx-auto text-text-secondary mb-2" />
+                <p className="text-text-secondary">No proposals yet. Create the first one!</p>
+              </div>
+            )}
           </TabsContent>
 
           {/* Events Tab */}
