@@ -412,6 +412,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_group_by_invite: {
+        Args: { invite_code: string }
+        Returns: {
+          id: string
+          name: string
+          image_url: string
+        }[]
+      }
       get_user_groups: {
         Args: { _user_id: string }
         Returns: {
@@ -425,6 +433,10 @@ export type Database = {
       is_group_member: {
         Args: { _user_id: string; _group_id: string }
         Returns: boolean
+      }
+      join_group: {
+        Args: { invite_code: string }
+        Returns: string
       }
     }
     Enums: {
