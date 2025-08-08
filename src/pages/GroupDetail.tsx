@@ -303,7 +303,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                     </div>
                   )}
                 </div>
-                <div className="shrink-0 px-2 pt-2 mb-[72px]">
+                <div className="shrink-0 px-2 pt-2 mb-[calc(env(safe-area-inset-bottom)+96px)] sm:mb-[96px]">
                   <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background p-2 shadow-md">
                     <Input
                       placeholder="Type a message..."
