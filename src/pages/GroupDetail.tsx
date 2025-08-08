@@ -197,7 +197,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="relative">
-            <div className="space-y-3 overflow-y-auto px-2 pr-2 pb-28 max-h-[calc(100dvh-300px)]">
+            <div className="space-y-3 overflow-y-auto px-2 pr-2 pb-4">
               {messages.map((message) => {
                 // Render system notifications (thin, yellow highlight)
                 if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
@@ -245,6 +245,8 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                   <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
                 </div>
               )}
+              {/* Spacer so the last message ends above the composer */}
+              <div aria-hidden className="h-20" />
             </div>
             <div className="fixed inset-x-0 bottom-24 px-4">
               <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 shadow-md">
