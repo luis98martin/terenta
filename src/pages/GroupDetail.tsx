@@ -254,10 +254,10 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
           <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col">
             <div className="relative h-full">
               <div className="flex flex-col h-full min-h-0">
-                <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2">
+                <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2 pr-1 chat-scroll">
                   {messages.map((message) => {
                     // Render system notifications (thin, yellow highlight)
-                    if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
+                    if (message.message_type === 'text' && message.content.includes('is alive!')) {
                       return (
                         <div key={message.id} className="flex justify-center">
                           <div className="w-full text-center text-xs px-3 py-1 rounded-md border bg-accent/15 text-foreground border-accent/30 inline-flex items-center gap-2 justify-center">
