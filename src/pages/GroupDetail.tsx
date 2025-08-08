@@ -11,7 +11,7 @@ import { MessageCircle, Vote, Calendar, Users, Send, Plus, ThumbsUp, ThumbsDown,
 import { useGroups } from "@/hooks/useGroups";
 import { useChats, useMessages } from "@/hooks/useChats";
 import { useProposals } from "@/hooks/useProposals";
-import { useEvents } from "@/hooks/useEvents";
+
 import { useToast } from "@/hooks/use-toast";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,7 +23,7 @@ export default function GroupDetail() {
   const { groups } = useGroups();
   const { chats, createChat } = useChats();
   const { proposals, createProposal, vote } = useProposals(groupId);
-  const { events } = useEvents(groupId);
+  
   const { toast } = useToast();
   const { getDisplayName, fetchProfiles } = useProfiles();
   const { user } = useAuth();
@@ -428,87 +428,50 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
           {/* Events Tab */}
           <TabsContent value="events" className="space-y-4">
             {(() => {
-              const combined = [
-                ...events.map(e => ({
-                  type: 'event' as const,
-                  id: e.id,
-                  date: new Date(e.start_date).getTime(),
-                  data: e,
-                })),
-                ...proposals.map(p => ({
-                  type: 'proposal' as const,
-                  id: p.id,
-                  // Prefer event_date, fallback to created_at
-                  date: new Date(p.event_date || p.created_at).getTime(),
-                  data: p,
-                }))
-              ].sort((a, b) => a.date - b.date);
+              // Show only original proposals with an event date to avoid duplicates
+              const proposalsWithDate = proposals
+                .filter(p => p.event_date)
+                .sort((a, b) => new Date(a.event_date!).getTime() - new Date(b.event_date!).getTime());
 
-              if (combined.length === 0) {
+              if (proposalsWithDate.length === 0) {
                 return (
                   <div className="text-center py-8">
                     <Calendar className="w-12 h-12 mx-auto text-text-secondary mb-2" />
-                    <p className="text-text-secondary">No upcoming items. New proposals also appear here.</p>
+                    <p className="text-text-secondary">No upcoming proposals scheduled.</p>
                   </div>
                 );
               }
 
               return (
                 <div className="space-y-4">
-                  {combined.map(item => (
-                    item.type === 'event' ? (
-                      <TeRentaCard key={`event-${item.id}`} variant="interactive">
-                          <div className="space-y-2">
+                  {proposalsWithDate.map((p) => (
+                    <Link key={`proposal-${p.id}`} to={`/groups/${groupId}/proposals/${p.id}`} className="block">
+                      <TeRentaCard variant="interactive">
+                        <div className="flex items-start gap-3">
+                          <Avatar className="w-10 h-10 mt-0.5">
+                            <AvatarImage src={p.image_url || undefined} alt={`Proposal image for ${p.title}`} />
+                            <AvatarFallback>{p.title.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div className="space-y-1 w-full">
                             <div className="flex items-center justify-between">
-                              <h3 className="font-semibold text-card-foreground">{item.data.title}</h3>
-                              {item.data.attendance_status === 'attending' ? (
+                              <h4 className="font-semibold text-card-foreground">{p.title}</h4>
+                              {p.user_vote === 'yes' ? (
                                 <span className="text-green-600"><Check size={16} /></span>
                               ) : (
                                 <span className="text-red-600"><X size={16} /></span>
                               )}
                             </div>
-                            {item.data.description && (
-                              <p className="text-sm text-text-secondary">{item.data.description}</p>
-                            )}
                             <div className="text-sm text-text-secondary">
-                              {new Date(item.data.start_date).toLocaleString()}
+                              🗓️ {new Date(p.event_date!).toLocaleString()}
                             </div>
-                            {item.data.location && (
-                              <div className="text-sm text-text-secondary">📍 {item.data.location}</div>
+                            {p.location && (
+                              <div className="text-sm text-text-secondary">📍 {p.location}</div>
                             )}
+                            <p className="text-xs text-text-secondary">by {getDisplayName(p.created_by)}</p>
                           </div>
+                        </div>
                       </TeRentaCard>
-                    ) : (
-                      <Link key={`proposal-${item.id}`} to={`/groups/${groupId}/proposals/${item.id}`} className="block">
-                        <TeRentaCard variant="interactive">
-                          <div className="flex items-start gap-3">
-                            <Avatar className="w-10 h-10 mt-0.5">
-                              <AvatarImage src={item.data.image_url || undefined} alt={`Proposal image for ${item.data.title}`} />
-                              <AvatarFallback>{item.data.title.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div className="space-y-1 w-full">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-semibold text-card-foreground">{item.data.title}</h4>
-                                {item.data.user_vote === 'yes' ? (
-                                  <span className="text-green-600"><Check size={16} /></span>
-                                ) : (
-                                  <span className="text-red-600"><X size={16} /></span>
-                                )}
-                              </div>
-                              {item.data.event_date && (
-                                <div className="text-sm text-text-secondary">
-                                  🗓️ {new Date(item.data.event_date).toLocaleString()}
-                                </div>
-                              )}
-                              {!item.data.event_date && (
-                                <div className="text-xs text-text-secondary">Created {new Date(item.data.created_at).toLocaleString()}</div>
-                              )}
-                              <p className="text-xs text-text-secondary">by {getDisplayName(item.data.created_by)}</p>
-                            </div>
-                          </div>
-                        </TeRentaCard>
-                      </Link>
-                    )
+                    </Link>
                   ))}
                 </div>
               );
