@@ -1,7 +1,7 @@
 import React from "react";
 import TypewriterText from "@/components/TypewriterText";
 
-const heroImage = "/lovable-uploads/87056922-0d10-4a21-b800-6c0afc9337ce.png";
+const heroImage = "/lovable-uploads/AppLogo.png";
 
 const words = [
   "Comida?",
