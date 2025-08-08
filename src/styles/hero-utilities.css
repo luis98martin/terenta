@@ -1,0 +1,11 @@
+/* Utility classes for hero-specific colors using design tokens */
+@tailwind utilities;
+
+@layer utilities {
+  .text-brand {
+    color: hsl(var(--brand-red));
+  }
+  .text-typewriter {
+    color: hsl(var(--typewriter));
+  }
+}

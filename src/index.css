@@ -40,7 +40,7 @@ All colors MUST be HSL.
     --radius: 1rem;                    /* 16px rounded corners */
 
     /* Enhanced TeRenta? Design Tokens */
-    --burgundy: 0 74% 11%;             /* #A41C1C */
+    --burgundy: 0 74% 11%;             /* deep burgundy */
     --burgundy-light: 0 74% 15%;       /* Lighter burgundy */
     --burgundy-dark: 0 74% 8%;         /* Darker burgundy */
     
@@ -54,6 +54,10 @@ All colors MUST be HSL.
     --text-primary: 0 0% 5%;           /* Almost black */
     --text-secondary: 0 0% 40%;        /* Medium gray */
     --text-tertiary: 0 0% 60%;         /* Light gray */
+
+    /* Brand-specific tokens for the Welcome hero */
+    --brand-red: 0 71% 38%;            /* matches #A41C1C */
+    --typewriter: 0 0% 0%;             /* pure black for typewriter text */
     
     /* Beautiful Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(0 74% 11%), hsl(0 74% 8%));
