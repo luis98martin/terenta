@@ -158,7 +158,6 @@ All colors MUST be HSL.
   /* Disable hover animations globally (mobile-friendly) */
   .no-hover-anim *:hover {
     transition: none !important;
-    transform: none !important;
     box-shadow: none !important;
     filter: none !important;
   }

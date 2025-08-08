@@ -184,7 +184,7 @@ export default function Profile() {
 
       {/* Edit Profile Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="max-w-md no-hover-anim">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
           </DialogHeader>
