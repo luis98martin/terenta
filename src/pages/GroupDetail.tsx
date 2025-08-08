@@ -303,15 +303,15 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                         {/* Voting Buttons */}
                         {proposal.status === 'active' && (
                           <div className="flex gap-2">
-                            <Button
-                              variant={proposal.user_vote === 'yes' ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'yes'); }}
-                              className="flex-1"
-                            >
-                              <ThumbsUp size={14} className="mr-1" />
-                              Yes
-                            </Button>
+                          <Button
+                            variant={proposal.user_vote === 'yes' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'yes'); }}
+                            className="flex-1"
+                          >
+                            <ThumbsUp size={14} className="mr-1" />
+                            Yes ({proposal.yes_votes || 0})
+                          </Button>
                             <Button
                               variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
                               size="sm"
@@ -319,7 +319,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                               className="flex-1"
                             >
                               <ThumbsDown size={14} className="mr-1" />
-                              No
+                              No ({proposal.no_votes || 0})
                             </Button>
                             <Button
                               variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
@@ -328,7 +328,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                               className="flex-1"
                             >
                               <Minus size={14} className="mr-1" />
-                              Abstain
+                              Abstain ({proposal.abstain_votes || 0})
                             </Button>
                           </div>
                         )}

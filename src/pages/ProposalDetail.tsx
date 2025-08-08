@@ -366,7 +366,7 @@ export default function ProposalDetail() {
                   onClick={() => handleVote('yes')}
                   className="flex-1"
                 >
-                  <ThumbsUp size={14} className="mr-1" /> Yes
+                  <ThumbsUp size={14} className="mr-1" /> Yes ({proposal.yes_votes || 0})
                 </Button>
                 <Button
                   variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
@@ -374,7 +374,7 @@ export default function ProposalDetail() {
                   onClick={() => handleVote('no')}
                   className="flex-1"
                 >
-                  <ThumbsDown size={14} className="mr-1" /> No
+                  <ThumbsDown size={14} className="mr-1" /> No ({proposal.no_votes || 0})
                 </Button>
                 <Button
                   variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
@@ -382,7 +382,7 @@ export default function ProposalDetail() {
                   onClick={() => handleVote('abstain')}
                   className="flex-1"
                 >
-                  <Minus size={14} className="mr-1" /> Abstain
+                  <Minus size={14} className="mr-1" /> Abstain ({proposal.abstain_votes || 0})
                 </Button>
               </div>
             )}

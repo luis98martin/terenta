@@ -326,7 +326,7 @@ export default function Proposals() {
                         className="flex-1"
                       >
                         <ThumbsUp size={14} className="mr-1" />
-                        Yes
+                        Yes ({proposal.yes_votes || 0})
                       </Button>
                       <Button
                         variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
@@ -335,7 +335,7 @@ export default function Proposals() {
                         className="flex-1"
                       >
                         <ThumbsDown size={14} className="mr-1" />
-                        No
+                        No ({proposal.no_votes || 0})
                       </Button>
                       <Button
                         variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
@@ -344,7 +344,7 @@ export default function Proposals() {
                         className="flex-1"
                       >
                         <Minus size={14} className="mr-1" />
-                        Abstain
+                        Abstain ({proposal.abstain_votes || 0})
                       </Button>
                     </div>
                   )}
