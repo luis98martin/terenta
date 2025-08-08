@@ -73,7 +73,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
         {longestWord}
       </span>
 
-      <span style={{ minWidth }} className="whitespace-nowrap">
+      <span style={{ minWidth }} className="whitespace-nowrap inline-block">
         {text}
       </span>
       {showCursor && (

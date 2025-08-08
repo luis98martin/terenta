@@ -19,7 +19,7 @@ const Hero: React.FC = () => {
   return (
     <div className="flex items-center justify-center gap-3 md:gap-4">
       <div className="flex flex-col items-end text-right">
-        <h1 className="font-chewy font-bold text-4xl md:text-5xl mb-1 text-brand leading-tight">
+        <h1 className="font-chewy font-bold text-5xl md:text-6xl mb-1 text-brand leading-tight">
           Te Renta
         </h1>
         <TypewriterText
