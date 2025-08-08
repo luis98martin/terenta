@@ -114,7 +114,7 @@ export default function Groups() {
               <Button 
                 onClick={handleJoinGroup}
                 disabled={joiningGroup || !inviteCode.trim()}
-                variant="mustard"
+                variant="burgundy"
               >
                 {joiningGroup ? 'Joining...' : 'Join'}
               </Button>
