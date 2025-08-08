@@ -106,6 +106,25 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
     };
   }, [chatId, refetchMessages]);
 
+  // Lock page scroll while in Chat tab so only chat area scrolls
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    if (activeTab === 'chat') {
+      html.style.overflow = 'hidden';
+      body.style.overflow = 'hidden';
+    } else {
+      html.style.overflow = prevHtmlOverflow || '';
+      body.style.overflow = prevBodyOverflow || '';
+    }
+    return () => {
+      html.style.overflow = prevHtmlOverflow || '';
+      body.style.overflow = prevBodyOverflow || '';
+    };
+  }, [activeTab]);
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !chatId) return;
 
@@ -159,7 +178,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
     <div className={`h-[100dvh] bg-background flex flex-col ${activeTab === 'chat' ? 'overflow-hidden' : ''}`}>
       <AppHeader title="TeRenta?" showBack backTo="/groups" />
       
-      <div className="flex-1 min-h-0 overflow-hidden px-4 py-6 max-w-lg mx-auto pb-24">
+      <div className="flex-1 min-h-0 overflow-hidden px-4 py-6 max-w-lg mx-auto">
         {/* Group Info */}
         <TeRentaCard className="mb-6">
             <div className="flex items-center gap-3 mb-3">
@@ -208,7 +227,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
           <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col">
             <div className="relative h-full">
               <div className="flex flex-col h-full min-h-0">
-                <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2">
+                <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-2 pb-28">
                   {messages.map((message) => {
                     // Render system notifications (thin, yellow highlight)
                     if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
@@ -257,7 +276,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                     </div>
                   )}
                 </div>
-                <div className="sticky bottom-0 px-2 pt-2 bg-gradient-to-t from-background via-background/80 to-transparent">
+                <div className="sticky bottom-[72px] z-[60] px-2 pt-2 bg-gradient-to-t from-background via-background/80 to-transparent">
                   <div className="max-w-lg mx-auto flex gap-2 rounded-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 shadow-md">
                     <Input
                       placeholder="Type a message..."
