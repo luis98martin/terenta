@@ -196,8 +196,8 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
           </TabsList>
 
           {/* Chat Tab */}
-          <TabsContent value="chat" className="space-y-4">
-            <div className="space-y-3 overflow-y-auto px-2 pb-48">
+          <TabsContent value="chat" className="relative">
+            <div className="space-y-3 overflow-y-auto px-2 pr-2 pb-28 max-h-[calc(100dvh-300px)]">
               {messages.map((message) => {
                 // Render system notifications (thin, yellow highlight)
                 if (message.message_type === 'text' && message.content.endsWith('has something for the group!')) {
