@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -31,7 +31,8 @@ export default function GroupDetail() {
 
   const [activeTab, setActiveTab] = useState("chat");
   const [newMessage, setNewMessage] = useState("");
-const [chatId, setChatId] = useState<string | null>(null);
+  const [chatId, setChatId] = useState<string | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
 // Group proposals by user answer and sort by event date
 const proposalsSorted = [...proposals].sort((a, b) => {
@@ -71,6 +72,13 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
       fetchProfiles(userIds);
     }
   }, [messages, fetchProfiles]);
+
+  // Auto-scroll to bottom when messages change or tab opens
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [messages, chatId, activeTab]);
 
   // Set up real-time subscription for messages
   useEffect(() => {
@@ -198,7 +206,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="relative">
-            <ScrollArea className="h-[48vh] overscroll-contain px-2 pr-2">
+            <ScrollArea className="h-[48vh] overscroll-contain px-2 pr-2 mb-3">
               <div className="space-y-3 pb-4">
                 {messages.map((message) => {
                   // Render system notifications (thin, yellow highlight)
@@ -247,6 +255,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                     <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
                   </div>
                 )}
+                <div ref={bottomRef} />
               </div>
             </ScrollArea>
             <div className="fixed inset-x-0 bottom-24 px-4">
