@@ -61,13 +61,49 @@ export function useEvents(groupId?: string) {
 
       const { data, error } = await query;
 
-      const formattedEvents = data?.map(event => ({
+      if (error) throw error;
+
+      // Map base fields, prefer event.image_url (new column)
+      let formattedEvents: Event[] = (data?.map((event: any) => ({
         ...event,
         group_name: event.groups?.name,
-        attendance_status: (event.event_attendees?.find(a => a.user_id === user.id)?.status || 'pending') as 'attending' | 'not_attending' | 'pending',
-        attendee_count: event.event_attendees?.filter(a => a.status === 'attending').length || 0,
-        group_image_url: event.groups?.image_url
-      })) || [];
+        attendance_status: (event.event_attendees?.find((a: any) => a.user_id === user.id)?.status || 'pending') as 'attending' | 'not_attending' | 'pending',
+        attendee_count: event.event_attendees?.filter((a: any) => a.status === 'attending').length || 0,
+        group_image_url: event.groups?.image_url,
+      })) || []) as Event[];
+
+      // Backfill event.image_url from related proposals when missing (for older events)
+      const missingImg = formattedEvents.filter(e => !e.image_url);
+      if (missingImg.length > 0) {
+        const groupIdsSet = Array.from(new Set(missingImg.map(e => e.group_id).filter(Boolean))) as string[];
+        const titlesSet = Array.from(new Set(missingImg.map(e => e.title)));
+        const datesSet = Array.from(new Set(missingImg.map(e => e.start_date)));
+
+        if (groupIdsSet.length && titlesSet.length && datesSet.length) {
+          const { data: propsData, error: propsError } = await supabase
+            .from('proposals')
+            .select('group_id, title, event_date, image_url')
+            .in('group_id', groupIdsSet)
+            .in('title', titlesSet)
+            .in('event_date', datesSet);
+
+          if (!propsError && propsData) {
+            const key = (g: string | undefined, t: string, d: string) => `${g || ''}|${t}|${d}`;
+            const imgMap = new Map<string, string>();
+            propsData.forEach(p => {
+              if (p.image_url) imgMap.set(key(p.group_id, p.title, p.event_date), p.image_url);
+            });
+            formattedEvents = formattedEvents.map(e => {
+              if (!e.image_url) {
+                const k = key(e.group_id, e.title, e.start_date);
+                const img = imgMap.get(k);
+                if (img) return { ...e, image_url: img };
+              }
+              return e;
+            });
+          }
+        }
+      }
 
       setEvents(formattedEvents);
     } catch (error) {
