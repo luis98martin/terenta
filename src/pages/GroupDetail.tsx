@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -137,16 +138,17 @@ export default function GroupDetail() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title={group.name} />
+      <AppHeader title="TeRenta?" />
       
       <div className="px-4 py-6 max-w-lg mx-auto">
         {/* Group Info */}
         <TeRentaCard className="mb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-              <Users className="text-accent" size={20} />
-            </div>
-            <div className="flex-1">
+            <div className="flex items-center gap-3 mb-3">
+              <Avatar className="w-12 h-12">
+                <AvatarImage src={group.image_url || undefined} alt={`${group.name} image`} />
+                <AvatarFallback>{group.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
               <h2 className="font-semibold text-card-foreground">{group.name}</h2>
               <p className="text-sm text-text-secondary">{group.member_count} members</p>
             </div>
@@ -244,78 +246,85 @@ export default function GroupDetail() {
               </Link>
             </Button>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {/* Show proposals AND events from proposals here */}
               {proposals.map((proposal) => (
                 <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`}>
-                <TeRentaCard variant="interactive">
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-card-foreground mb-1">{proposal.title}</h3>
-                        {proposal.description && (
-                          <p className="text-sm text-text-secondary mb-2">{proposal.description}</p>
-                        )}
+                  <TeRentaCard variant="interactive">
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 flex items-start gap-3">
+                          <Avatar className="w-10 h-10 mt-0.5">
+                            <AvatarImage src={proposal.image_url || undefined} alt={`Proposal image for ${proposal.title}`} />
+                            <AvatarFallback>{proposal.title.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-card-foreground mb-1">{proposal.title}</h3>
+                            <p className="text-xs text-text-secondary">by {getDisplayName(proposal.created_by)}</p>
+                            {proposal.description && (
+                              <p className="text-sm text-text-secondary mt-1 line-clamp-2">{proposal.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          proposal.status === 'active' ? 'bg-green-100 text-green-800' :
+                          proposal.status === 'passed' ? 'bg-blue-100 text-blue-800' :
+                          proposal.status === 'failed' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {proposal.status}
+                        </div>
                       </div>
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        proposal.status === 'active' ? 'bg-green-100 text-green-800' :
-                        proposal.status === 'passed' ? 'bg-blue-100 text-blue-800' :
-                        proposal.status === 'failed' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {proposal.status}
+
+                      {/* Voting Results */}
+                      <div className="text-sm">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-green-600">Yes: {proposal.yes_votes || 0}</span>
+                          <span className="text-red-600">No: {proposal.no_votes || 0}</span>
+                          <span className="text-gray-600">Abstain: {proposal.abstain_votes || 0}</span>
+                        </div>
                       </div>
+
+                      {/* Voting Buttons */}
+                      {proposal.status === 'active' && (
+                        <div className="flex gap-2">
+                          <Button
+                            variant={proposal.user_vote === 'yes' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'yes'); }}
+                            className="flex-1"
+                          >
+                            <ThumbsUp size={14} className="mr-1" />
+                            Yes
+                          </Button>
+                          <Button
+                            variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
+                            size="sm"
+                            onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'no'); }}
+                            className="flex-1"
+                          >
+                            <ThumbsDown size={14} className="mr-1" />
+                            No
+                          </Button>
+                          <Button
+                            variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
+                            size="sm"
+                            onClick={(e) => { e.preventDefault(); handleVote(proposal.id, 'abstain'); }}
+                            className="flex-1"
+                          >
+                            <Minus size={14} className="mr-1" />
+                            Abstain
+                          </Button>
+                        </div>
+                      )}
+
+                      {proposal.user_vote && proposal.status === 'active' && (
+                        <div className="text-xs text-center text-text-secondary bg-background/50 py-2 rounded">
+                          You voted: {proposal.user_vote} • Click any button to change your vote
+                        </div>
+                      )}
                     </div>
-
-                    {/* Voting Results */}
-                    <div className="text-sm">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-green-600">Yes: {proposal.yes_votes || 0}</span>
-                        <span className="text-red-600">No: {proposal.no_votes || 0}</span>
-                        <span className="text-gray-600">Abstain: {proposal.abstain_votes || 0}</span>
-                      </div>
-                    </div>
-
-                    {/* Voting Buttons */}
-                    {proposal.status === 'active' && (
-                      <div className="flex gap-2">
-                        <Button
-                          variant={proposal.user_vote === 'yes' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => handleVote(proposal.id, 'yes')}
-                          className="flex-1"
-                        >
-                          <ThumbsUp size={14} className="mr-1" />
-                          Yes
-                        </Button>
-                        <Button
-                          variant={proposal.user_vote === 'no' ? 'destructive' : 'outline'}
-                          size="sm"
-                          onClick={() => handleVote(proposal.id, 'no')}
-                          className="flex-1"
-                        >
-                          <ThumbsDown size={14} className="mr-1" />
-                          No
-                        </Button>
-                        <Button
-                          variant={proposal.user_vote === 'abstain' ? 'secondary' : 'outline'}
-                          size="sm"
-                          onClick={() => handleVote(proposal.id, 'abstain')}
-                          className="flex-1"
-                        >
-                          <Minus size={14} className="mr-1" />
-                          Abstain
-                        </Button>
-                      </div>
-                    )}
-
-                    {proposal.user_vote && proposal.status === 'active' && (
-                      <div className="text-xs text-center text-text-secondary bg-background/50 py-2 rounded">
-                        You voted: {proposal.user_vote} • Click any button to change your vote
-                      </div>
-                    )}
-                  </div>
-                </TeRentaCard>
+                  </TeRentaCard>
                 </Link>
               ))}
               {/* Show upcoming events from proposals */}
@@ -379,7 +388,7 @@ export default function GroupDetail() {
               }
 
               return (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {combined.map(item => (
                     item.type === 'event' ? (
                       <TeRentaCard key={`event-${item.id}`} variant="interactive">
@@ -399,19 +408,26 @@ export default function GroupDetail() {
                     ) : (
                       <Link key={`proposal-${item.id}`} to={`/groups/${groupId}/proposals/${item.id}`}>
                         <TeRentaCard variant="highlighted">
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between">
-                              <h4 className="font-semibold text-card-foreground">{item.data.title}</h4>
-                              <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full">Proposal</span>
-                            </div>
-                            {item.data.event_date && (
-                              <div className="text-sm text-text-secondary">
-                                🗓️ {new Date(item.data.event_date).toLocaleString()}
+                          <div className="flex items-start gap-3">
+                            <Avatar className="w-10 h-10 mt-0.5">
+                              <AvatarImage src={item.data.image_url || undefined} alt={`Proposal image for ${item.data.title}`} />
+                              <AvatarFallback>{item.data.title.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-semibold text-card-foreground">{item.data.title}</h4>
+                                <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full">Proposal</span>
                               </div>
-                            )}
-                            {!item.data.event_date && (
-                              <div className="text-xs text-text-secondary">Created {new Date(item.data.created_at).toLocaleString()}</div>
-                            )}
+                              {item.data.event_date && (
+                                <div className="text-sm text-text-secondary">
+                                  🗓️ {new Date(item.data.event_date).toLocaleString()}
+                                </div>
+                              )}
+                              {!item.data.event_date && (
+                                <div className="text-xs text-text-secondary">Created {new Date(item.data.created_at).toLocaleString()}</div>
+                              )}
+                              <p className="text-xs text-text-secondary">by {getDisplayName(item.data.created_by)}</p>
+                            </div>
                           </div>
                         </TeRentaCard>
                       </Link>

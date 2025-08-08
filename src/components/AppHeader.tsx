@@ -12,9 +12,13 @@ export function AppHeader({ title, showNotifications = true, showSearch = false 
     <header className="bg-primary backdrop-blur-sm border-b border-border/30 px-4 py-4 sticky top-0 z-40">
       <div className="flex items-center justify-between max-w-lg mx-auto">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-white">
-            {title}
-          </h1>
+          <img
+            src="/lovable-uploads/a878b72e-05fa-459d-a514-06cf3eca6f6c.png"
+            alt="TeRenta? app icon"
+            className="w-7 h-7 rounded"
+            loading="lazy"
+          />
+          <h1 className="text-2xl font-bold text-white">TeRenta?</h1>
         </div>
         
         <div className="flex items-center gap-2">

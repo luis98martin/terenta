@@ -241,12 +241,7 @@ const [uploadingImage, setUploadingImage] = useState(false);
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="flex items-center px-4 py-3 bg-surface border-b border-border">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mr-3">
-          <ArrowLeft size={20} />
-        </Button>
-        <h1 className="text-lg font-semibold">Manage Group</h1>
-      </div>
+      <AppHeader title="TeRenta?" />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
         {/* Group Info */}

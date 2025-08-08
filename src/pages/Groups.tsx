@@ -3,6 +3,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Plus, Users, Calendar, MessageCircle, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useGroups } from "@/hooks/useGroups";
@@ -109,9 +110,12 @@ export default function Groups() {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                      <Users className="text-accent" size={20} />
-                    </div>
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={group.image_url || undefined} alt={`${group.name} image`} />
+                      <AvatarFallback>
+                        {group.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-semibold text-card-foreground truncate">

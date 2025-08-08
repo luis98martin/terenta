@@ -86,7 +86,7 @@ export default function Profile() {
   };
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Profile" />
+      <AppHeader title="TeRenta?" />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
         {/* Profile Info */}
