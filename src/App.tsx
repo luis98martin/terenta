@@ -19,6 +19,7 @@ import Chat from "./pages/Chat";
 import ChatPage from "./pages/ChatPage";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import JoinGroup from "./pages/JoinGroup";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
           {/* Welcome & Auth Routes */}
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/auth/:mode" element={<Auth />} />
+          <Route path="/join/:code" element={<JoinGroup />} />
           
           {/* Main App Routes - Protected */}
           <Route path="/" element={<AuthGuard><Dashboard /></AuthGuard>} />

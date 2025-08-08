@@ -4,7 +4,7 @@ import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Plus, Users, Calendar, MessageCircle, Search } from "lucide-react";
+import { Plus, Users, Calendar, MessageCircle, Search, Share } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useGroups } from "@/hooks/useGroups";
 import { useState } from "react";
@@ -60,6 +60,24 @@ export default function Groups() {
     }
   };
 
+  const handleShareGroup = async (group: { name: string; invite_code: string }) => {
+    const url = `${window.location.origin}/join/${group.invite_code}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${group.name} on TeRenta`, text: `Join ${group.name} on TeRenta`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Invite link copied', description: 'Share it with your friends to join the group.' });
+      }
+    } catch (e) {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Invite link copied', description: 'Share it with your friends to join the group.' });
+      } catch {
+        toast({ title: 'Unable to share', description: 'Please copy the code manually.', variant: 'destructive' });
+      }
+    }
+  };
   return (
     <div className="min-h-screen bg-background pb-20">
       <AppHeader title="Groups" showSearch />
@@ -155,9 +173,17 @@ export default function Groups() {
                         <span>Code: {group.invite_code}</span>
 
                         <Button
-                          variant="destructive"
+                          variant="outline"
                           size="sm"
                           className="ml-auto"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleShareGroup(group); }}
+                        >
+                          <Share size={14} className="mr-1" /> Share
+                        </Button>
+
+                        <Button
+                          variant="destructive"
+                          size="sm"
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLeaveGroup(group.id, group.name); }}
                           disabled={leavingId === group.id}
                         >

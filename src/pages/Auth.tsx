@@ -45,6 +45,20 @@ export default function Auth() {
             variant: "destructive",
           });
         } else {
+          // If coming from an invite link, join automatically
+          const pending = localStorage.getItem('pending_join_code');
+          if (pending) {
+            try {
+              const { data: groupId, error: joinError } = await supabase.rpc('join_group', { invite_code: pending });
+              if (joinError) throw joinError;
+              localStorage.removeItem('pending_join_code');
+              toast({ title: 'Joined group!', description: 'Welcome to your new group.' });
+              navigate(`/groups/${groupId}`);
+              return;
+            } catch (e: any) {
+              toast({ title: 'Invite join failed', description: e.message || 'Please try again', variant: 'destructive' });
+            }
+          }
           navigate('/');
         }
       } else {
