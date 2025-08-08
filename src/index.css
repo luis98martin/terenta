@@ -121,6 +121,11 @@ All colors MUST be HSL.
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 
+  /* Section titles font: unify across the app without changing size or color */
+  h1, h2, h3 {
+    @apply font-chewy;
+  }
+
   /* Custom utility classes */
   .text-gradient {
     background: var(--gradient-accent);
