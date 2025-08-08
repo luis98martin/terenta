@@ -37,14 +37,6 @@ export function AppHeader({ title, showNotifications = true, showSearch = false,
             </Button>
           )}
           
-          {showNotifications && (
-            <Button variant="glass" size="icon-sm" className="text-white/80 relative">
-              <Bell size={18} />
-              <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                3
-              </span>
-            </Button>
-          )}
         </div>
       </div>
     </header>
