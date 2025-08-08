@@ -70,7 +70,7 @@ export function AppHeader({ title, showNotifications = true, showSearch = false,
             className="w-7 h-7 rounded scale-110"
             loading="lazy"
           />
-          <h1 className="text-2xl font-bold text-white">TeRenta?</h1>
+          <h1 className="text-2xl font-bold text-white font-chewy">TeRenta?</h1>
         </div>
         
         <div className="flex items-center gap-2">
