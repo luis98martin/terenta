@@ -6,7 +6,7 @@ import { TeRentaCard } from "@/components/TeRentaCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Vote, Calendar, Users, Send, Plus, ThumbsUp, ThumbsDown, Minus } from "lucide-react";
+import { MessageCircle, Vote, Calendar, Users, Send, Plus, ThumbsUp, ThumbsDown, Minus, Check, X } from "lucide-react";
 import { useGroups } from "@/hooks/useGroups";
 import { useChats, useMessages } from "@/hooks/useChats";
 import { useProposals } from "@/hooks/useProposals";
@@ -246,7 +246,7 @@ export default function GroupDetail() {
               </Link>
             </Button>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {/* Show proposals AND events from proposals here */}
               {proposals.map((proposal) => (
                 <Link key={proposal.id} to={`/groups/${groupId}/proposals/${proposal.id}`}>
@@ -392,31 +392,42 @@ export default function GroupDetail() {
                   {combined.map(item => (
                     item.type === 'event' ? (
                       <TeRentaCard key={`event-${item.id}`} variant="interactive">
-                        <div className="space-y-2">
-                          <h3 className="font-semibold text-card-foreground">{item.data.title}</h3>
-                          {item.data.description && (
-                            <p className="text-sm text-text-secondary">{item.data.description}</p>
-                          )}
-                          <div className="text-sm text-text-secondary">
-                            {new Date(item.data.start_date).toLocaleString()}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-semibold text-card-foreground">{item.data.title}</h3>
+                              {item.data.attendance_status === 'attending' ? (
+                                <span className="text-green-600"><Check size={16} /></span>
+                              ) : (
+                                <span className="text-red-600"><X size={16} /></span>
+                              )}
+                            </div>
+                            {item.data.description && (
+                              <p className="text-sm text-text-secondary">{item.data.description}</p>
+                            )}
+                            <div className="text-sm text-text-secondary">
+                              {new Date(item.data.start_date).toLocaleString()}
+                            </div>
+                            {item.data.location && (
+                              <div className="text-sm text-text-secondary">📍 {item.data.location}</div>
+                            )}
                           </div>
-                          {item.data.location && (
-                            <div className="text-sm text-text-secondary">📍 {item.data.location}</div>
-                          )}
-                        </div>
                       </TeRentaCard>
                     ) : (
                       <Link key={`proposal-${item.id}`} to={`/groups/${groupId}/proposals/${item.id}`}>
-                        <TeRentaCard variant="highlighted">
+                        <TeRentaCard variant="interactive">
                           <div className="flex items-start gap-3">
                             <Avatar className="w-10 h-10 mt-0.5">
                               <AvatarImage src={item.data.image_url || undefined} alt={`Proposal image for ${item.data.title}`} />
                               <AvatarFallback>{item.data.title.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <div className="space-y-1">
+                            <div className="space-y-1 w-full">
                               <div className="flex items-center justify-between">
                                 <h4 className="font-semibold text-card-foreground">{item.data.title}</h4>
-                                <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full">Proposal</span>
+                                {item.data.user_vote === 'yes' ? (
+                                  <span className="text-green-600"><Check size={16} /></span>
+                                ) : (
+                                  <span className="text-red-600"><X size={16} /></span>
+                                )}
                               </div>
                               {item.data.event_date && (
                                 <div className="text-sm text-text-secondary">

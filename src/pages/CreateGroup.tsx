@@ -8,6 +8,7 @@ import { ArrowLeft, Users, Hash, Upload, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useGroups } from "@/hooks/useGroups";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function CreateGroup() {
   const navigate = useNavigate();
@@ -38,9 +39,37 @@ export default function CreateGroup() {
       const group = await createGroup({
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
-        // TODO: Implement image upload
         image_url: undefined
       });
+
+      // Upload image if selected
+      if (formData.photo) {
+        const path = `${group.id}/cover-${Date.now()}-${formData.photo.name}`;
+        const { error: uploadError } = await supabase
+          .storage
+          .from('group-images')
+          .upload(path, formData.photo, { upsert: true });
+        if (uploadError) {
+          toast({
+            title: "Image upload failed",
+            description: uploadError.message,
+            variant: "destructive",
+          });
+        } else {
+          const { data: pub } = supabase.storage.from('group-images').getPublicUrl(path);
+          const { error: updateError } = await supabase
+            .from('groups')
+            .update({ image_url: pub.publicUrl })
+            .eq('id', group.id);
+          if (updateError) {
+            toast({
+              title: "Failed to set group image",
+              description: updateError.message,
+              variant: "destructive",
+            });
+          }
+        }
+      }
 
       toast({
         title: "Group created!",
@@ -89,12 +118,31 @@ export default function CreateGroup() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Group Avatar */}
             <div className="text-center">
-              <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3 cursor-pointer hover:bg-accent/20 transition-colors">
+              <input
+                id="group-photo-input"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => setFormData(prev => ({ ...prev, photo: e.target.files?.[0] || null }))}
+              />
+              <div
+                className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3 cursor-pointer hover:bg-accent/20 transition-colors"
+                onClick={() => document.getElementById('group-photo-input')?.click()}
+              >
                 <Upload className="text-accent" size={24} />
               </div>
-              <Button variant="ghost" size="sm" className="text-accent">
-                Add Group Photo
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-accent"
+                onClick={() => document.getElementById('group-photo-input')?.click()}
+              >
+                {formData.photo ? 'Change Photo' : 'Add Group Photo'}
               </Button>
+              {formData.photo && (
+                <p className="text-xs text-text-secondary mt-2">{formData.photo.name}</p>
+              )}
             </div>
 
             {/* Group Name */}
