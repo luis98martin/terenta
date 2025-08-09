@@ -9,7 +9,6 @@ import { useProfiles } from "@/hooks/useProfiles";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
-  User, 
   Settings, 
   Bell, 
   Shield, 
@@ -19,25 +18,24 @@ import {
   Users,
   MessageCircle,
   ChevronRight,
-  Upload
+  Upload,
+  Globe
 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const profileStats = [
-  { icon: Calendar, label: "Events Organized", value: "24" },
-  { icon: Users, label: "Groups Joined", value: "8" },
-  { icon: MessageCircle, label: "Messages Sent", value: "156" },
-];
-
-const menuItems = [
-  { icon: Settings, label: "Account Settings", description: "Update your profile and preferences" },
-  { icon: Bell, label: "Notifications", description: "Manage notification settings" },
-  { icon: Shield, label: "Privacy & Security", description: "Control your privacy settings" },
-  { icon: HelpCircle, label: "Help & Support", description: "Get help and contact support" },
-];
 
 export default function Profile() {
   const { user, signOut } = useAuth();
   const { getDisplayName, fetchProfile } = useProfiles();
+  const { language, setLanguage, t } = useLanguage();
+  
+  const menuItems = [
+    { icon: Settings, label: t('profile.edit'), description: "Update your profile and preferences" },
+    { icon: Globe, label: t('profile.language'), description: "Change app language", isLanguage: true },
+    { icon: Bell, label: t('profile.notifications'), description: t('profile.notificationsDesc') },
+    { icon: Shield, label: t('profile.privacy'), description: t('profile.privacyDesc') },
+    { icon: HelpCircle, label: t('profile.help'), description: t('profile.helpDesc') },
+  ];
   const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -91,7 +89,7 @@ export default function Profile() {
   };
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="TeRenta?" />
+      <AppHeader title={t('profile.title')} />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
         {/* Profile Info */}
@@ -111,7 +109,7 @@ export default function Profile() {
           </p>
           
           <Button variant="mustard-outline" size="sm" onClick={() => setIsEditing(true)}>
-            Edit Profile
+            {t('profile.editProfile')}
           </Button>
         </TeRentaCard>
 
@@ -120,17 +118,17 @@ export default function Profile() {
           <TeRentaCard className="text-center animate-slide-up" style={{ animationDelay: `0s` }}>
             <Calendar className="w-6 h-6 mx-auto mb-2 text-accent" />
             <div className="text-xl font-bold text-card-foreground">{stats.eventsOrganized}</div>
-            <div className="text-xs text-text-secondary">Events Organized</div>
+            <div className="text-xs text-text-secondary">{t('profile.eventsOrganized')}</div>
           </TeRentaCard>
           <TeRentaCard className="text-center animate-slide-up" style={{ animationDelay: `0.1s` }}>
             <Users className="w-6 h-6 mx-auto mb-2 text-accent" />
             <div className="text-xl font-bold text-card-foreground">{stats.groupsJoined}</div>
-            <div className="text-xs text-text-secondary">Groups Joined</div>
+            <div className="text-xs text-text-secondary">{t('profile.groupsJoined')}</div>
           </TeRentaCard>
           <TeRentaCard className="text-center animate-slide-up" style={{ animationDelay: `0.2s` }}>
             <MessageCircle className="w-6 h-6 mx-auto mb-2 text-accent" />
             <div className="text-xl font-bold text-card-foreground">{stats.messagesSent}</div>
-            <div className="text-xs text-text-secondary">Messages Sent</div>
+            <div className="text-xs text-text-secondary">{t('profile.messagesSent')}</div>
           </TeRentaCard>
         </div>
 
@@ -140,8 +138,12 @@ export default function Profile() {
             <TeRentaCard 
               key={item.label} 
               variant="interactive"
-              className={`animate-slide-up`}
+              className="animate-slide-up"
               style={{ animationDelay: `${(index + 3) * 0.1}s` }}
+              onClick={item.isLanguage ? () => {
+                console.log('Language switch clicked, current language:', language);
+                setLanguage(language === 'en' ? 'es' : 'en');
+              } : undefined}
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
@@ -153,11 +155,17 @@ export default function Profile() {
                     {item.label}
                   </h4>
                   <p className="text-sm text-text-secondary">
-                    {item.description}
+                    {item.isLanguage ? (language === 'en' ? t('profile.english') : t('profile.spanish')) : item.description}
                   </p>
                 </div>
                 
-                <ChevronRight className="text-text-secondary" size={18} />
+                {item.isLanguage ? (
+                  <div className="text-sm font-medium text-accent">
+                    {language === 'en' ? 'EN' : 'ES'}
+                  </div>
+                ) : (
+                  <ChevronRight className="text-text-secondary" size={18} />
+                )}
               </div>
             </TeRentaCard>
           ))}
@@ -170,7 +178,7 @@ export default function Profile() {
               Te<span className="text-accent">Renta</span>? v1.0.0
             </h3>
             <p className="text-sm text-text-secondary">
-              Making group planning simple and fun
+              {t('profile.appVersion')}
             </p>
           </div>
         </TeRentaCard>
@@ -180,7 +188,7 @@ export default function Profile() {
           <TeRentaCard variant="interactive">
             <div className="flex items-center gap-3 text-destructive">
               <LogOut size={20} />
-              <span className="font-medium">Sign Out</span>
+              <span className="font-medium">{t('profile.signOut')}</span>
             </div>
           </TeRentaCard>
         </div>
@@ -190,7 +198,7 @@ export default function Profile() {
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogTitle>{t('profile.editProfile')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="flex items-center gap-4">
@@ -200,7 +208,7 @@ export default function Profile() {
               </Avatar>
               <label className="inline-flex items-center gap-2 px-3 py-2 rounded border border-border cursor-pointer">
                 <Upload size={14} />
-                <span className="text-sm">{uploading ? 'Uploading...' : 'Upload new'}</span>
+                <span className="text-sm">{uploading ? t('profile.uploading') : t('profile.uploadNew')}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -214,10 +222,10 @@ export default function Profile() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1 transition-none active:!scale-100" onClick={() => setIsEditing(false)}>
-                Close
+                {t('profile.close')}
               </Button>
               <Button className="flex-1 transition-none active:!scale-100" onClick={() => setIsEditing(false)} disabled={uploading}>
-                Done
+                {t('profile.done')}
               </Button>
             </div>
           </div>

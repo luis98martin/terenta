@@ -326,7 +326,7 @@ export default function ProposalDetail() {
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(proposal.location)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline text-accent hover:opacity-80"
+                  className="underline text-accent active:opacity-80"
                 >
                   View location in Google Maps
                 </a>

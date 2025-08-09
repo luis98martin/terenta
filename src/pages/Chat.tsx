@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Users, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useChats } from "@/hooks/useChats";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Chat() {
   const { chats, loading } = useChats();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Chats" showSearch />
+      <AppHeader title={t('chat.title')} showSearch />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-4">
         {loading ? (
@@ -41,12 +43,12 @@ export default function Chat() {
                         {chat.name}
                       </h4>
                       <span className="text-xs text-text-secondary">
-                        Group chat
+                        {t('chat.groupChat')}
                       </span>
                     </div>
                     
                     <p className="text-sm text-text-secondary truncate">
-                      No messages yet
+                      {t('chat.noMessages')}
                     </p>
                   </div>
                 </div>
@@ -56,14 +58,14 @@ export default function Chat() {
         ) : (
           <div className="text-center py-12">
             <MessageCircle className="w-16 h-16 mx-auto text-text-secondary mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">No chats yet</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">{t('chat.noChats')}</h3>
             <p className="text-text-secondary mb-6 max-w-sm mx-auto">
-              Join or create groups to start chatting with others!
+              {t('chat.noChatsDescription')}
             </p>
             <Button variant="mustard" asChild>
               <Link to="/groups">
                 <Users className="w-4 h-4 mr-2" />
-                View Groups
+                {t('chat.viewGroups')}
               </Link>
             </Button>
           </div>

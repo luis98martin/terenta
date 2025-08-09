@@ -214,7 +214,7 @@ const notAccepted = proposalsSorted.filter(p => p.user_vote === 'no');
                     return (
                       <div key={message.id} className="flex justify-center">
                         <div className="w-full text-center text-xs px-3 py-1 rounded-md border bg-accent/15 text-foreground border-accent/30 inline-flex items-center gap-2 justify-center">
-                          <img src="/lovable-uploads/87056922-0d10-4a21-b800-6c0afc9337ce.png" alt="App logo" className="w-4 h-4 rounded-full" />
+                          <img src="/lovable-uploads/clearlogo.png" alt="TeRenta app logo" className="w-4 h-4 rounded" />
                           <span className="truncate">{`${getDisplayName(message.user_id)} is alive!`}</span>
                         </div>
                       </div>

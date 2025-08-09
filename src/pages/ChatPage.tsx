@@ -8,11 +8,13 @@ import { ArrowLeft, Send, Plus } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useMessages } from "@/hooks/useChats";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>();
   const { messages, loading, sendMessage } = useMessages(chatId || '');
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -35,8 +37,8 @@ export default function ChatPage() {
       setNewMessage('');
     } catch (error: any) {
       toast({
-        title: "Failed to send message",
-        description: error.message || "Something went wrong",
+        title: t('chat.failedToSend'),
+        description: error.message || t('chat.somethingWrong'),
         variant: "destructive",
       });
     } finally {
@@ -53,7 +55,7 @@ export default function ChatPage() {
             <ArrowLeft size={20} className="text-white" />
           </Link>
         </Button>
-        <h1 className="text-lg font-semibold">Chat</h1>
+        <h1 className="text-lg font-semibold">{t('chat.title')}</h1>
       </div>
 
       {/* Messages */}
@@ -61,7 +63,7 @@ export default function ChatPage() {
         {loading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-text-secondary">Loading messages...</p>
+            <p className="mt-2 text-text-secondary">{t('chat.loadingMessages')}</p>
           </div>
         ) : messages.length > 0 ? (
           messages.map((message) => (
@@ -81,9 +83,9 @@ export default function ChatPage() {
           ))
         ) : (
           <div className="text-center py-12">
-            <p className="text-text-secondary">No messages yet</p>
+            <p className="text-text-secondary">{t('chat.noMessagesYet')}</p>
             <p className="text-sm text-text-secondary mt-2">
-              Start the conversation!
+              {t('chat.startConversation')}
             </p>
           </div>
         )}
@@ -97,7 +99,7 @@ export default function ChatPage() {
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
+              placeholder={t('chat.typeMessage')}
               className="flex-1"
               disabled={sending}
             />

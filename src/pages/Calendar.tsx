@@ -41,9 +41,11 @@ export default function Calendar() {
               }}
               modifiersStyles={{
                 hasEvent: { 
-                  backgroundColor: 'hsl(var(--primary))', 
-                  color: 'hsl(var(--primary-foreground))',
-                  borderRadius: '50%'
+                  backgroundColor: 'hsl(var(--destructive))', 
+                  color: 'white',
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  position: 'relative'
                 }
               }}
             />

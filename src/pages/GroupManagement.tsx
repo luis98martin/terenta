@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GroupMember {
   id: string;
@@ -36,6 +37,7 @@ export default function GroupManagement() {
   const { user } = useAuth();
   const { getDisplayName, fetchProfiles } = useProfiles();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,12 +104,12 @@ const [uploadingImage, setUploadingImage] = useState(false);
 
       setIsEditing(false);
       toast({
-        title: "Group updated",
-        description: "Group information has been saved"
+        title: t('groupMgmt.groupUpdated'),
+        description: t('groupMgmt.groupSaved')
       });
     } catch (error: any) {
       toast({
-        title: "Failed to update group",
+        title: t('groupMgmt.failedToUpdate'),
         description: error.message,
         variant: "destructive"
       });
@@ -127,12 +129,12 @@ const [uploadingImage, setUploadingImage] = useState(false);
 
       fetchMembers();
       toast({
-        title: "Member removed",
-        description: "The member has been removed from the group"
+        title: t('groupMgmt.memberRemoved'),
+        description: t('groupMgmt.memberRemovedDesc')
       });
     } catch (error: any) {
       toast({
-        title: "Failed to remove member",
+        title: t('groupMgmt.failedToRemove'),
         description: error.message,
         variant: "destructive"
       });
@@ -150,12 +152,12 @@ const [uploadingImage, setUploadingImage] = useState(false);
 
       fetchMembers();
       toast({
-        title: "Member promoted",
-        description: "The member has been promoted to admin"
+        title: t('groupMgmt.memberPromoted'),
+        description: t('groupMgmt.memberPromotedDesc')
       });
     } catch (error: any) {
       toast({
-        title: "Failed to promote member",
+        title: t('groupMgmt.failedToPromote'),
         description: error.message,
         variant: "destructive"
       });
@@ -179,9 +181,9 @@ const [uploadingImage, setUploadingImage] = useState(false);
         .update({ image_url: newUrl })
         .eq('id', group.id);
       if (updateError) throw updateError;
-      toast({ title: 'Group image updated' });
+      toast({ title: t('groupMgmt.groupImageUpdated') });
     } catch (error: any) {
-      toast({ title: 'Failed to update image', description: error.message, variant: 'destructive' });
+      toast({ title: t('groupMgmt.failedToUpdateImage'), description: error.message, variant: 'destructive' });
     } finally {
       setUploadingImage(false);
     }
@@ -189,30 +191,30 @@ const [uploadingImage, setUploadingImage] = useState(false);
 
   const handleDeleteGroup = async () => {
     if (!group) return;
-    if (!window.confirm('Are you sure you want to delete this group? This action cannot be undone.')) return;
+    if (!window.confirm(t('groupMgmt.confirmDelete'))) return;
     try {
       const { error } = await supabase
         .from('groups')
         .delete()
         .eq('id', group.id);
       if (error) throw error;
-      toast({ title: 'Group deleted' });
+      toast({ title: t('groupMgmt.groupDeleted') });
       navigate('/groups');
     } catch (error: any) {
-      toast({ title: 'Failed to delete group', description: error.message, variant: 'destructive' });
+      toast({ title: t('groupMgmt.failedToDelete'), description: error.message, variant: 'destructive' });
     }
   };
 
   if (!group) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <AppHeader title="Group Not Found" showBack />
+        <AppHeader title={t('groupMgmt.groupNotFound')} showBack />
         <div className="px-4 py-6 max-w-lg mx-auto">
           <TeRentaCard>
             <div className="text-center">
-              <p className="text-text-secondary mb-4">This group doesn't exist or you don't have access to it.</p>
+              <p className="text-text-secondary mb-4">{t('groupMgmt.noAccess')}</p>
               <Button variant="mustard" onClick={() => navigate('/groups')}>
-                Back to Groups
+                {t('groupMgmt.backToGroups')}
               </Button>
             </div>
           </TeRentaCard>
@@ -224,13 +226,13 @@ const [uploadingImage, setUploadingImage] = useState(false);
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <AppHeader title="Access Denied" showBack />
+        <AppHeader title={t('groupMgmt.accessDenied')} showBack />
         <div className="px-4 py-6 max-w-lg mx-auto">
           <TeRentaCard>
             <div className="text-center">
-              <p className="text-text-secondary mb-4">You need admin privileges to manage this group.</p>
+              <p className="text-text-secondary mb-4">{t('groupMgmt.needAdmin')}</p>
               <Button variant="mustard" onClick={() => navigate(`/groups/${groupId}`)}>
-                Back to Group
+                {t('groupMgmt.backToGroup')}
               </Button>
             </div>
           </TeRentaCard>
@@ -251,7 +253,7 @@ const [uploadingImage, setUploadingImage] = useState(false);
               <h2 className="text-xl font-bold">{group.name}</h2>
               <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
                 <Edit2 size={16} className="mr-1" />
-                Edit
+                {t('groupMgmt.edit')}
               </Button>
             </div>
 
@@ -277,7 +279,7 @@ const [uploadingImage, setUploadingImage] = useState(false);
                 )}
               </div>
               {uploadingImage && (
-                <span className="text-xs text-text-secondary">Uploading...</span>
+                <span className="text-xs text-text-secondary">{t('groupMgmt.uploading')}</span>
               )}
             </div>
 
@@ -285,7 +287,7 @@ const [uploadingImage, setUploadingImage] = useState(false);
               <p className="text-text-secondary">{group.description}</p>
             )}
             <div className="text-sm text-text-secondary">
-              Invite Code: <span className="font-mono bg-background/50 px-2 py-1 rounded">{group.invite_code}</span>
+              {t('groupMgmt.inviteCode')} <span className="font-mono bg-background/50 px-2 py-1 rounded">{group.invite_code}</span>
             </div>
           </div>
         </TeRentaCard>
@@ -294,7 +296,7 @@ const [uploadingImage, setUploadingImage] = useState(false);
         <TeRentaCard>
           <div className="flex items-center gap-2 mb-4">
             <Users size={18} />
-            <h2 className="font-semibold">Members ({members.length})</h2>
+            <h2 className="font-semibold">{t('groupMgmt.members')} ({members.length})</h2>
           </div>
 
           <div className="space-y-3">
@@ -320,12 +322,12 @@ const [uploadingImage, setUploadingImage] = useState(false);
                         {member.role === 'admin' && (
                           <Badge variant="secondary" className="text-xs">
                             <Crown size={10} className="mr-1" />
-                            Admin
+                            {t('groupMgmt.admin')}
                           </Badge>
                         )}
                       </div>
                       <p className="text-xs text-text-secondary">
-                        Joined {new Date(member.joined_at).toLocaleDateString()}
+                        {t('groupMgmt.joined')} {new Date(member.joined_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -339,7 +341,7 @@ const [uploadingImage, setUploadingImage] = useState(false);
                           onClick={() => handlePromoteToAdmin(member.id)}
                         >
                           <Crown size={14} className="mr-1" />
-                          Promote
+                          {t('groupMgmt.promote')}
                         </Button>
                       )}
                       <Button
@@ -359,10 +361,10 @@ const [uploadingImage, setUploadingImage] = useState(false);
         {/* Danger Zone */}
         <TeRentaCard>
           <div className="space-y-2">
-            <h3 className="font-semibold text-destructive">Danger Zone</h3>
-            <p className="text-sm text-text-secondary">Deleting a group will remove all its content.</p>
+            <h3 className="font-semibold text-destructive">{t('groupMgmt.dangerZone')}</h3>
+            <p className="text-sm text-text-secondary">{t('groupMgmt.deleteWarning')}</p>
             <Button variant="destructive" onClick={handleDeleteGroup}>
-              Delete Group
+              {t('groupMgmt.deleteGroup')}
             </Button>
           </div>
         </TeRentaCard>
@@ -372,23 +374,23 @@ const [uploadingImage, setUploadingImage] = useState(false);
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Group</DialogTitle>
+            <DialogTitle>{t('groupMgmt.editGroup')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Group Name</label>
+              <label className="text-sm font-medium">{t('groupMgmt.groupName')}</label>
               <Input
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
-                placeholder="Enter group name"
+                placeholder={t('groupMgmt.groupNamePlaceholder')}
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Description</label>
+              <label className="text-sm font-medium">{t('groupMgmt.description')}</label>
               <Textarea
                 value={editedDescription}
                 onChange={(e) => setEditedDescription(e.target.value)}
-                placeholder="Enter group description"
+                placeholder={t('groupMgmt.descriptionPlaceholder')}
               />
             </div>
             <div className="flex gap-2">
@@ -397,14 +399,14 @@ const [uploadingImage, setUploadingImage] = useState(false);
                 onClick={() => setIsEditing(false)}
                 className="flex-1"
               >
-                Cancel
+                {t('groupMgmt.cancel')}
               </Button>
               <Button 
                 onClick={handleUpdateGroup}
                 className="flex-1"
                 disabled={!editedName.trim()}
               >
-                Save Changes
+                {t('groupMgmt.saveChanges')}
               </Button>
             </div>
           </div>

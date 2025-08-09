@@ -8,12 +8,14 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Auth() {
   const { mode } = useParams<{ mode: 'login' | 'register' }>();
   const navigate = useNavigate();
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const isLogin = mode === 'login';
   const [loading, setLoading] = useState(false);
   
@@ -40,7 +42,7 @@ export default function Auth() {
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
           toast({
-            title: "Error signing in",
+            title: t('auth.errorSigningIn'),
             description: error.message,
             variant: "destructive",
           });
@@ -64,8 +66,8 @@ export default function Auth() {
       } else {
         if (formData.password !== formData.confirmPassword) {
           toast({
-            title: "Passwords don't match",
-            description: "Please make sure your passwords match",
+            title: t('auth.passwordsDontMatch'),
+            description: t('auth.passwordsMatchError'),
             variant: "destructive",
           });
           return;
@@ -81,21 +83,21 @@ export default function Auth() {
         });
         if (error) {
           toast({
-            title: "Error creating account",
+            title: t('auth.errorCreatingAccount'),
             description: error.message,
             variant: "destructive",
           });
         } else {
           toast({
-            title: "Account created!",
-            description: "Please check your email to verify your account",
+            title: t('auth.accountCreated'),
+            description: t('auth.checkEmailVerify'),
           });
           navigate('/auth/login');
         }
       }
     } catch (error) {
       toast({
-        title: "Something went wrong",
+        title: t('chat.somethingWrong'),
         description: "Please try again later",
         variant: "destructive",
       });
@@ -117,17 +119,39 @@ export default function Auth() {
 
   const checkUsernameAvailability = async (username: string) => {
     setUsernameChecking(true);
+    console.log('Checking username:', username);
     try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', username)
-        .single();
+      // Use RPC function for more reliable checking
+      const { data, error } = await supabase.rpc('check_username_availability', {
+        username_input: username.toLowerCase()
+      });
       
-      setUsernameAvailable(!data);
+      console.log('Username check result:', { data, error, username });
+      
+      if (error) {
+        console.error('Database error:', error);
+        // Fallback to direct query if RPC doesn't exist
+        const { data: profiles, error: queryError } = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('username', username.toLowerCase())
+          .limit(1);
+        
+        console.log('Fallback query result:', { profiles, queryError });
+        
+        if (queryError) {
+          console.error('Fallback query error:', queryError);
+          setUsernameAvailable(null);
+        } else {
+          setUsernameAvailable(profiles.length === 0);
+        }
+      } else {
+        // RPC returned result
+        setUsernameAvailable(data);
+      }
     } catch (error) {
-      // No user found means username is available
-      setUsernameAvailable(true);
+      console.error('Network error:', error);
+      setUsernameAvailable(null);
     } finally {
       setUsernameChecking(false);
     }
@@ -150,7 +174,7 @@ export default function Auth() {
           </Button>
           
           <h1 className="text-2xl font-semibold text-foreground">
-            {isLogin ? 'Welcome back' : 'Create account'}
+            {isLogin ? t('auth.welcomeBack') : t('auth.createAccount')}
           </h1>
         </div>
 
@@ -161,14 +185,14 @@ export default function Auth() {
               <>
                 <div className="space-y-2">
                   <Label htmlFor="username" className="text-card-foreground">
-                    Username
+                    {t('auth.username')}
                   </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
                     <Input
                       id="username"
                       type="text"
-                      placeholder="Choose a unique username"
+                      placeholder={t('auth.usernamePlaceholder')}
                       value={formData.username}
                       onChange={(e) => handleInputChange('username', e.target.value)}
                       className="pl-10 h-12 rounded-xl"
@@ -181,22 +205,22 @@ export default function Auth() {
                     )}
                   </div>
                   {usernameAvailable === false && (
-                    <p className="text-xs text-red-500">Username is already taken</p>
+                    <p className="text-xs text-red-500">{t('auth.usernameUnavailable')}</p>
                   )}
                   {usernameAvailable === true && (
-                    <p className="text-xs text-green-500">Username is available</p>
+                    <p className="text-xs text-green-500">{t('auth.usernameAvailable')}</p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="firstName" className="text-card-foreground">
-                      First Name
+                      {t('auth.firstName')}
                     </Label>
                     <Input
                       id="firstName"
                       type="text"
-                      placeholder="First name"
+                      placeholder={t('auth.firstNamePlaceholder')}
                       value={formData.firstName}
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
                       className="h-12 rounded-xl"
@@ -205,12 +229,12 @@ export default function Auth() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName" className="text-card-foreground">
-                      Last Name
+                      {t('auth.lastName')}
                     </Label>
                     <Input
                       id="lastName"
                       type="text"
-                      placeholder="Last name"
+                      placeholder={t('auth.lastNamePlaceholder')}
                       value={formData.lastName}
                       onChange={(e) => handleInputChange('lastName', e.target.value)}
                       className="h-12 rounded-xl"
@@ -221,7 +245,7 @@ export default function Auth() {
 
                 <div className="space-y-2">
                   <Label htmlFor="birthDate" className="text-card-foreground">
-                    Birth Date
+                    {t('auth.birthDate')}
                   </Label>
                   <Input
                     id="birthDate"
@@ -235,7 +259,7 @@ export default function Auth() {
 
                 <div className="space-y-2">
                   <Label htmlFor="country" className="text-card-foreground">
-                    Country
+                    {t('auth.country')}
                   </Label>
                   <select
                     id="country"
@@ -244,7 +268,7 @@ export default function Auth() {
                     className="w-full px-3 py-3 border border-border rounded-xl bg-background"
                     required
                   >
-                    <option value="">Select your country</option>
+                    <option value="">{t('auth.selectCountry')}</option>
                     <option value="US">United States</option>
                     <option value="CA">Canada</option>
                     <option value="UK">United Kingdom</option>
@@ -272,14 +296,14 @@ export default function Auth() {
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-card-foreground">
-                Email
+                {t('auth.email')}
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t('auth.emailPlaceholder')}
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   className="pl-10 h-12 rounded-xl"
@@ -290,14 +314,14 @@ export default function Auth() {
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-card-foreground">
-                Password
+                {t('auth.password')}
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t('auth.passwordPlaceholder')}
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   className="pl-10 h-12 rounded-xl"
@@ -309,14 +333,14 @@ export default function Auth() {
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-card-foreground">
-                  Confirm Password
+                  {t('auth.confirmPassword')}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
                   <Input
                     id="confirmPassword"
                     type="password"
-                    placeholder="Confirm your password"
+                    placeholder={t('auth.confirmPasswordPlaceholder')}
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                     className="pl-10 h-12 rounded-xl"
@@ -328,25 +352,25 @@ export default function Auth() {
 
             <Button
               type="submit"
-              variant="mustard"
+              variant="brand-hero"
               size="lg"
               className="w-full mt-6"
               disabled={loading}
             >
-              {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Create Account')}
+              {loading ? t('auth.loading') : (isLogin ? t('auth.signIn') : t('auth.createAccount'))}
             </Button>
           </form>
 
           {/* Switch mode */}
           <div className="mt-6 text-center">
             <p className="text-text-secondary text-sm">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              {isLogin ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}
               {' '}
               <Link
                 to={isLogin ? '/auth/register' : '/auth/login'}
-                className="text-accent font-medium hover:underline"
+                className="text-accent font-medium active:underline"
               >
-                {isLogin ? 'Sign up' : 'Sign in'}
+                {isLogin ? t('auth.signUp') : t('auth.signIn')}
               </Link>
             </p>
           </div>

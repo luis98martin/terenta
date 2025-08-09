@@ -1,4 +1,3 @@
-import React from "react";
 import TypewriterText from "@/components/TypewriterText";
 
 const heroImage = "/lovable-uploads/AppLogo.png";
@@ -15,7 +14,7 @@ const words = [
   "Cena?",
 ];
 
-const Hero: React.FC = () => {
+const Hero = () => {
   return (
     <div className="flex items-center justify-center gap-3 md:gap-4">
       <div className="flex flex-col items-end text-right">

@@ -52,7 +52,7 @@ export function useGroups() {
 
       setGroups(groupsWithCounts);
     } catch (error) {
-      console.error('Error fetching groups:', error);
+      // Silently handle fetch errors - user will see empty state
     } finally {
       setLoading(false);
     }

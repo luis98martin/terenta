@@ -10,7 +10,7 @@ interface TypewriterTextProps {
 }
 
 // A11y: cursor is decorative; we render it with aria-hidden
-export const TypewriterText: React.FC<TypewriterTextProps> = ({
+export const TypewriterText = ({
   words,
   typingSpeed = 120,
   deleteSpeed = 80,
@@ -69,7 +69,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
       {/* Off-screen measurer to prevent layout shift */}
       <span
         ref={measureRef}
-        className={`${className || ""} absolute invisible -z-10 whitespace-nowrap`}
+        className={`absolute invisible -z-10 whitespace-nowrap ${className || ""}`}
         aria-hidden
       >
         {longestWord}

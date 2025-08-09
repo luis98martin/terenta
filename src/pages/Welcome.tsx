@@ -3,31 +3,33 @@ import { TeRentaCard } from "@/components/TeRentaCard";
 import { Users, Calendar, MessageCircle, Vote } from "lucide-react";
 import { Link } from "react-router-dom";
 import Hero from "@/components/Hero";
-
-const features = [
-  {
-    icon: Users,
-    title: "Create Groups",
-    description: "Easily invite friends with simple codes"
-  },
-  {
-    icon: Vote,
-    title: "Make Proposals",
-    description: "Suggest dates, activities, and times"
-  },
-  {
-    icon: MessageCircle,
-    title: "Chat & Vote",
-    description: "Discuss and vote on the best options"
-  },
-  {
-    icon: Calendar,
-    title: "Plan Together",
-    description: "Turn decisions into confirmed events"
-  }
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Welcome() {
+  const { t } = useLanguage();
+  
+  const features = [
+    {
+      icon: Users,
+      title: t('welcome.createGroups'),
+      description: t('welcome.createGroupsDesc')
+    },
+    {
+      icon: Vote,
+      title: t('welcome.makeProposals'),
+      description: t('welcome.makeProposalsDesc')
+    },
+    {
+      icon: MessageCircle,
+      title: t('welcome.chatVote'),
+      description: t('welcome.chatVoteDesc')
+    },
+    {
+      icon: Calendar,
+      title: t('welcome.planTogether'),
+      description: t('welcome.planTogetherDesc')
+    }
+  ];
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
@@ -38,26 +40,26 @@ export default function Welcome() {
           </div>
           
           <p className="text-lg text-foreground/80 mb-8 leading-relaxed">
-            The easiest way to organize plans with friends. Create proposals, vote together, and turn decisions into memories.
+            {t('welcome.tagline')}
           </p>
           
           <div className="space-y-3">
             <Button 
-              variant="hero" 
+              variant="brand-hero" 
               size="lg" 
               className="w-full animate-fade-in"
               asChild
             >
-              <Link to="/auth/register">Get Started</Link>
+              <Link to="/auth/register">{t('welcome.getStarted')}</Link>
             </Button>
             
             <Button 
-              variant="mustard-outline" 
+              variant="brand-outline" 
               size="lg" 
               className="w-full"
               asChild
             >
-              <Link to="/auth/login">Sign In</Link>
+              <Link to="/auth/login">{t('welcome.signIn')}</Link>
             </Button>
           </div>
         </div>
@@ -67,7 +69,7 @@ export default function Welcome() {
       <div className="px-4 pb-8">
         <div className="max-w-lg mx-auto">
           <h2 className="text-2xl font-semibold text-center mb-6 text-foreground">
-            How it works
+            {t('welcome.howItWorks')}
           </h2>
           
           <div className="grid grid-cols-2 gap-4">
@@ -93,7 +95,7 @@ export default function Welcome() {
       {/* Footer */}
       <div className="px-4 pb-8 text-center">
         <p className="text-sm text-foreground/60">
-          Join thousands planning better together
+          {t('welcome.joinThousands')}
         </p>
       </div>
     </div>

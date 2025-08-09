@@ -11,6 +11,7 @@ import { useProposals } from "@/hooks/useProposals";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function CreateProposal() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -18,6 +19,7 @@ export default function CreateProposal() {
   const { createProposal } = useProposals();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [creating, setCreating] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -34,8 +36,8 @@ export default function CreateProposal() {
     
     if (!formData.title.trim() || !groupId) {
       toast({
-        title: "Missing required fields",
-        description: "Please enter a title",
+        title: t('createProposal.missingFields'),
+        description: t('createProposal.enterTitle'),
         variant: "destructive",
       });
       return;
@@ -67,15 +69,15 @@ export default function CreateProposal() {
       });
 
       toast({
-        title: "Proposal created!",
-        description: `"${formData.title}" is now open for voting`,
+        title: t('createProposal.proposalCreated'),
+        description: t('createProposal.openForVoting').replace('{title}', formData.title),
       });
 
       navigate(`/groups/${groupId}`);
     } catch (error: any) {
       toast({
-        title: "Failed to create proposal",
-        description: error.message || "Something went wrong",
+        title: t('createProposal.failedToCreate'),
+        description: error.message || t('chat.somethingWrong'),
         variant: "destructive",
       });
     } finally {
@@ -85,37 +87,37 @@ export default function CreateProposal() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Create Proposal" showBack />
+      <AppHeader title={t('createProposal.title')} showBack />
       
       <div className="px-4 py-6 max-w-lg mx-auto">
         <TeRentaCard>
           <form onSubmit={handleCreateProposal} className="space-y-4">
-            <h3 className="font-semibold text-card-foreground mb-4">Create New Proposal</h3>
+            <h3 className="font-semibold text-card-foreground mb-4">{t('createProposal.createNew')}</h3>
             
             <div className="space-y-2">
-              <Label htmlFor="title">Proposal Title *</Label>
+              <Label htmlFor="title">{t('createProposal.proposalTitle')} *</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="e.g., Should we go to the beach this weekend?"
+                placeholder={t('createProposal.titlePlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('createProposal.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Provide more details about your proposal..."
+                placeholder={t('createProposal.descriptionPlaceholder')}
                 className="min-h-20"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="expires_at">Voting Deadline (Optional)</Label>
+              <Label htmlFor="expires_at">{t('createProposal.votingDeadline')}</Label>
               <Input
                 id="expires_at"
                 type="datetime-local"
@@ -125,7 +127,7 @@ export default function CreateProposal() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="event_date">Event Date (If proposal becomes an event)</Label>
+              <Label htmlFor="event_date">{t('createProposal.eventDate')}</Label>
               <Input
                 id="event_date"
                 type="datetime-local"
@@ -135,17 +137,17 @@ export default function CreateProposal() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">Location (Optional)</Label>
+              <Label htmlFor="location">{t('createProposal.location')}</Label>
               <Input
                 id="location"
                 value={formData.location}
                 onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="e.g., Central Park, New York"
+                placeholder={t('createProposal.locationPlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">Image (Optional)</Label>
+              <Label htmlFor="image">{t('createProposal.image')}</Label>
               <Input
                 id="image"
                 type="file"
@@ -161,7 +163,7 @@ export default function CreateProposal() {
                 onClick={() => navigate(`/groups/${groupId}`)}
                 className="flex-1"
               >
-                Cancel
+                {t('createProposal.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -169,7 +171,7 @@ export default function CreateProposal() {
                 disabled={creating}
                 className="flex-1"
               >
-                {creating ? 'Creating...' : 'Create Proposal'}
+                {creating ? t('createProposal.creating') : t('createProposal.create')}
               </Button>
             </div>
           </form>

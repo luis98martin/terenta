@@ -133,9 +133,6 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-md);
   }
 
-  .shadow-card-hover {
-    box-shadow: var(--shadow-lg);
-  }
 
   .shadow-accent {
     box-shadow: var(--shadow-accent);
@@ -155,14 +152,14 @@ All colors MUST be HSL.
     border-radius: 3px;
   }
 
-  ::-webkit-scrollbar-thumb:hover {
+  ::-webkit-scrollbar-thumb:active {
     background: hsl(var(--accent) / 0.8);
   }
 
   /* Disable hover animations globally (mobile-friendly) */
-  .no-hover-anim *:hover {
-    transition: none !important;
-    box-shadow: none !important;
-    filter: none !important;
+  @media (hover: hover) {
+    .no-hover-anim *:hover {
+      transition: none !important;
+    }
   }
 }

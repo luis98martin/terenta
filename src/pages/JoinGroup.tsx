@@ -8,12 +8,14 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function JoinGroup() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [group, setGroup] = useState<{ id: string; name: string; image_url?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -56,10 +58,10 @@ export default function JoinGroup() {
         const { data: groupId, error } = await supabase.rpc('join_group', { invite_code: normalized });
         if (error) throw error;
         if (!groupId) throw new Error('Invalid or expired invite code');
-        toast({ title: 'Joined group!', description: 'Welcome to your new group.' });
+        toast({ title: t('joinGroup.joinedGroup'), description: t('joinGroup.welcomeToGroup') });
         navigate(`/groups/${groupId}`);
       } catch (err: any) {
-        toast({ title: 'Failed to join group', description: err.message || 'Please try again', variant: 'destructive' });
+        toast({ title: t('joinGroup.failedToJoin'), description: err.message || 'Please try again', variant: 'destructive' });
         navigate('/groups');
       } finally {
         setLoading(false);
@@ -70,7 +72,7 @@ export default function JoinGroup() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Join Group" showBack backTo="/" />
+      <AppHeader title={t('joinGroup.title')} showBack backTo="/" />
       <div className="px-4 py-6 max-w-lg mx-auto">
         <TeRentaCard>
           {!user ? (
@@ -78,7 +80,7 @@ export default function JoinGroup() {
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-                  <p className="text-text-secondary">Loading invite…</p>
+                  <p className="text-text-secondary">{t('joinGroup.loadingInvite')}</p>
                 </>
               ) : (
                 <>
@@ -89,23 +91,23 @@ export default function JoinGroup() {
                     </Avatar>
                     <div className="text-left">
                       <h1 className="font-semibold text-card-foreground">
-                        {group?.name ? `You’re invited to join ${group.name}` : 'You’re invited to join a group'}
+                        {group?.name ? t('joinGroup.invitedToJoin').replace('{groupName}', group.name) : t('joinGroup.invitedGeneric')}
                       </h1>
-                      <p className="text-sm text-text-secondary">Choose how you want to continue</p>
+                      <p className="text-sm text-text-secondary">{t('joinGroup.chooseContinue')}</p>
                     </div>
                   </div>
 
                   <div className="grid gap-3">
                     <Button variant="mustard" onClick={() => navigate('/auth/login')}>
-                      I already have an account
+                      {t('joinGroup.haveAccount')}
                     </Button>
                     <Button variant="outline" onClick={() => navigate('/auth/register')}>
-                      Create an account
+                      {t('joinGroup.createAccount')}
                     </Button>
                   </div>
 
                   <p className="text-xs text-text-secondary">
-                    After you login or sign up, we’ll join you to the group automatically.
+                    {t('joinGroup.autoJoin')}
                   </p>
                 </>
               )}
@@ -113,7 +115,7 @@ export default function JoinGroup() {
           ) : (
             <div className="text-center py-10">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-              <p className="text-text-secondary">Processing your invite…</p>
+              <p className="text-text-secondary">{t('joinGroup.processingInvite')}</p>
             </div>
           )}
         </TeRentaCard>

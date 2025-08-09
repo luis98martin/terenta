@@ -10,21 +10,16 @@ import { useEvents } from "@/hooks/useEvents";
 import { useChats } from "@/hooks/useChats";
 import { format } from "date-fns";
 import Hero from "@/components/Hero";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Dashboard() {
   const { groups, loading: groupsLoading } = useGroups();
   const { events, loading: eventsLoading } = useEvents();
   const { chats, loading: chatsLoading } = useChats();
-
-  // Calculate stats from real data
-  const groupsCount = groups?.length || 0;
-  const eventsCount = events?.length || 0;
-  const chatsCount = chats?.length || 0;
-
+  const { t } = useLanguage();
 
   // Get recent groups (limit to 3)
   const recentGroups = groups?.slice(0, 3) || [];
-
   // Get upcoming events (limit to 2)
   const upcomingEvents = events?.slice(0, 2) || [];
 
@@ -38,14 +33,12 @@ export default function Dashboard() {
           <Hero />
         </section>
 
-
-
         {/* Recent Groups */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-foreground">Recent Groups</h3>
+            <h3 className="font-semibold text-foreground">{t('dashboard.recentGroups')}</h3>
             <Button variant="ghost" size="sm" className="text-accent" asChild>
-              <Link to="/groups">View all</Link>
+              <Link to="/groups">{t('dashboard.viewAll')}</Link>
             </Button>
           </div>
           
@@ -83,9 +76,9 @@ export default function Dashboard() {
           ) : (
             <TeRentaCard className="text-center py-6">
               <Users className="w-8 h-8 mx-auto mb-2 text-text-secondary" />
-              <p className="text-sm text-text-secondary mb-3">No groups yet</p>
+              <p className="text-sm text-text-secondary mb-3">{t('groups.noGroups')}</p>
               <Button variant="mustard" size="sm" asChild>
-                <Link to="/groups/create">Create Group</Link>
+                <Link to="/groups/create">{t('groups.createGroup')}</Link>
               </Button>
             </TeRentaCard>
           )}
@@ -93,7 +86,7 @@ export default function Dashboard() {
 
         {/* Upcoming Events */}
         <div className="space-y-3">
-          <h3 className="font-semibold text-foreground">Upcoming Events</h3>
+          <h3 className="font-semibold text-foreground">{t('dashboard.upcomingEvents')}</h3>
           
           {eventsLoading ? (
             <div className="text-center py-4">
@@ -127,9 +120,9 @@ export default function Dashboard() {
           ) : (
             <TeRentaCard className="text-center py-6">
               <Calendar className="w-8 h-8 mx-auto mb-2 text-text-secondary" />
-              <p className="text-sm text-text-secondary mb-3">No upcoming events</p>
+              <p className="text-sm text-text-secondary mb-3">{t('dashboard.noUpcomingEvents')}</p>
               <Button variant="mustard" size="sm" asChild>
-                <Link to="/calendar">View Calendar</Link>
+                <Link to="/calendar">{t('dashboard.viewCalendar')}</Link>
               </Button>
             </TeRentaCard>
           )}

@@ -9,10 +9,12 @@ import { Link } from "react-router-dom";
 import { useGroups } from "@/hooks/useGroups";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Groups() {
   const { groups, loading, joinGroup, leaveGroup } = useGroups();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [inviteCode, setInviteCode] = useState("");
   const [joiningGroup, setJoiningGroup] = useState(false);
   const [leavingId, setLeavingId] = useState<string | null>(null);
@@ -20,8 +22,8 @@ export default function Groups() {
   const handleJoinGroup = async () => {
     if (!inviteCode.trim()) {
       toast({
-        title: "Enter invite code",
-        description: "Please enter a valid invite code",
+        title: t('groups.enterInviteCode'),
+        description: t('groups.pleaseEnterValidCode'),
         variant: "destructive",
       });
       return;
@@ -31,14 +33,14 @@ export default function Groups() {
     try {
       await joinGroup(inviteCode.trim().toUpperCase());
       toast({
-        title: "Joined group!",
-        description: "You've successfully joined the group",
+        title: t('groups.joinedGroup'),
+        description: t('groups.successfullyJoined'),
       });
       setInviteCode("");
     } catch (error: any) {
       toast({
-        title: "Failed to join group",
-        description: error.message || "Invalid invite code",
+        title: t('groups.failedToJoinGroup'),
+        description: error.message || t('groups.invalidInviteCode'),
         variant: "destructive",
       });
     } finally {
@@ -52,9 +54,9 @@ export default function Groups() {
     setLeavingId(groupId);
     try {
       await leaveGroup(groupId);
-      toast({ title: 'Left group', description: `You left ${groupName}` });
+      toast({ title: t('groups.leftGroup'), description: `You left ${groupName}` });
     } catch (error: any) {
-      toast({ title: 'Could not leave group', description: error.message || 'Please try again', variant: 'destructive' });
+      toast({ title: t('groups.couldNotLeaveGroup'), description: error.message || 'Please try again', variant: 'destructive' });
     } finally {
       setLeavingId(null);
     }
@@ -67,20 +69,20 @@ export default function Groups() {
         await navigator.share({ title: `${group.name} on TeRenta`, text: `Join ${group.name} on TeRenta`, url });
       } else {
         await navigator.clipboard.writeText(url);
-        toast({ title: 'Invite link copied', description: 'Share it with your friends to join the group.' });
+        toast({ title: t('groups.inviteLinkCopied'), description: t('groups.shareWithFriends') });
       }
     } catch (e) {
       try {
         await navigator.clipboard.writeText(url);
-        toast({ title: 'Invite link copied', description: 'Share it with your friends to join the group.' });
+        toast({ title: t('groups.inviteLinkCopied'), description: t('groups.shareWithFriends') });
       } catch {
-        toast({ title: 'Unable to share', description: 'Please copy the code manually.', variant: 'destructive' });
+        toast({ title: t('groups.unableToShare'), description: t('groups.copyCodeManually'), variant: 'destructive' });
       }
     }
   };
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Groups" showSearch />
+      <AppHeader title={t('groups.title')} showSearch />
       
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
         <div>
@@ -91,7 +93,7 @@ export default function Groups() {
           >
             <Link to="/groups/create">
               <Plus size={16} className="mr-2" />
-              Create Group
+              {t('groups.createGroup')}
             </Link>
           </Button>
         </div>
@@ -99,12 +101,12 @@ export default function Groups() {
         {/* Join Group Section */}
         <TeRentaCard className="animate-fade-in">
           <div className="space-y-4">
-            <h3 className="font-semibold text-card-foreground">Join a Group</h3>
+            <h3 className="font-semibold text-card-foreground">{t('groups.joinGroup')}</h3>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
                 <Input
-                  placeholder="Enter invite code..."
+                  placeholder={t('groups.joinGroupPlaceholder')}
                   value={inviteCode}
                   onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                   className="pl-10"
@@ -116,7 +118,7 @@ export default function Groups() {
                 disabled={joiningGroup || !inviteCode.trim()}
                 variant="mustard"
               >
-                {joiningGroup ? 'Joining...' : 'Join'}
+                {joiningGroup ? t('groups.joining') : t('groups.join')}
               </Button>
             </div>
           </div>
@@ -127,7 +129,7 @@ export default function Groups() {
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-text-secondary">Loading groups...</p>
+              <p className="mt-2 text-text-secondary">{t('groups.loadingGroups')}</p>
             </div>
           ) : groups.length > 0 ? (
             groups.map((group, index) => (
@@ -168,9 +170,9 @@ export default function Groups() {
                       <div className="col-span-2 mt-1 flex flex-wrap items-center gap-3 text-xs text-text-secondary">
                         <span className="flex items-center gap-1">
                           <Users size={14} />
-                          {group.member_count} members
+                          {group.member_count} {t('groups.members')}
                         </span>
-                        <span>Code: {group.invite_code}</span>
+                        <span>{t('groups.code')} {group.invite_code}</span>
 
                         <Button
                           variant="outline"
@@ -178,7 +180,7 @@ export default function Groups() {
                           className="ml-auto"
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleShareGroup(group); }}
                         >
-                          <Share size={14} className="mr-1" /> Share
+                          <Share size={14} className="mr-1" /> {t('groups.share')}
                         </Button>
 
                         <Button
@@ -187,7 +189,7 @@ export default function Groups() {
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLeaveGroup(group.id, group.name); }}
                           disabled={leavingId === group.id}
                         >
-                          {leavingId === group.id ? 'Leaving...' : 'Leave'}
+                          {leavingId === group.id ? t('groups.leaving') : t('groups.leave')}
                         </Button>
                       </div>
                     </div>
@@ -197,14 +199,14 @@ export default function Groups() {
           ) : (
             <div className="text-center py-12">
               <Users className="w-16 h-16 mx-auto text-text-secondary mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No groups yet</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-2">{t('groups.noGroups')}</h3>
               <p className="text-text-secondary mb-6 max-w-sm mx-auto">
-                Create your first group or join one with an invite code to get started!
+                {t('groups.noGroupsDescription')}
               </p>
               <Button variant="mustard" asChild>
                 <Link to="/groups/create">
                   <Plus className="w-4 h-4 mr-2" />
-                  Create Group
+                  {t('groups.createGroup')}
                 </Link>
               </Button>
             </div>
